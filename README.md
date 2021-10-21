@@ -16,7 +16,7 @@ This is intended to provide the base for code-generation tooling enabling a rich
 
 [![NuGet version](https://badge.fury.io/nu/OnRamp.svg)](https://badge.fury.io/nu/OnRamp)
 
-The included [CHANGELOG](./src/OnRamp/CHANGELOG.md) provides the details of changes per published version.
+The included [change log](CHANGELOG.md) details the changes per published version.
 
 <br/>
 
@@ -352,42 +352,17 @@ _OnRamp_ is open source under the [MIT license](./LICENSE) and is free for comme
 <br/>
 
 ## Contributing
-One of the easiest ways to contribute is to participate in discussions on GitHub issues. You can also contribute by submitting pull requests (PR) with code changes.
+
+One of the easiest ways to contribute is to participate in discussions on GitHub issues. You can also contribute by submitting pull requests (PR) with code changes. Contributions are welcome. See information on [contributing](./CONTRIBUTING.md), as well as our [code of conduct](https://avanade.github.io/code-of-conduct/).
 
 <br/>
 
-### Coding guidelines
+## Security
 
-The most general guideline is that we use all the VS default settings in terms of code formatting; if in doubt, follow the coding convention of the existing code base.
-1. Use four spaces of indentation (no tabs).
-2. Use `_camelCase` for private fields.
-3. Avoid `this.` unless absolutely necessary.
-4. Always specify member visibility, even if it's the default (i.e. `private string _foo;` not `string _foo;`).
-5. Open-braces (`{`) go on a new line (an `if` with single-line statement does not need braces).
-6. Use any language features available to you (expression-bodied members, throw expressions, tuples, etc.) as long as they make for readable, manageable code.
-7. All methods and properties must include the [XML documentation comments](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/xmldoc/xml-documentation-comments). Private methods and properties only need to specifiy the [summary](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/xmldoc/summary) as a minimum.
-
-For further guidance see ASP.NET Core [Engineering guidelines](https://github.com/aspnet/AspNetCore/wiki/Engineering-guidelines).
+See our [security disclosure](./SECURITY.md) policy.
 
 <br/>
 
-### Tests
+## Who is Avanade?
 
-We use [`NUnit`](https://github.com/nunit/nunit) for all unit testing.
-
-- Tests need to be provided for every bug/feature that is completed.
-- Tests only need to be present for issues that need to be verified by QA (for example, not tasks).
-- If there is a scenario that is far too hard to test there does not need to be a test for it.
-- "Too hard" is determined by the team as a whole.
-
-We understand there is more work to be performed in generating a higher level of code coverage; this technical debt is on the backlog.
-
-<br/>
-
-### Code reviews and checkins
-
-To help ensure that only the highest quality code makes its way into the project, please submit all your code changes to GitHub as PRs. This includes runtime code changes, unit test updates, and updates to the end-to-end demo.
-
-For example, sending a PR for just an update to a unit test might seem like a waste of time but the unit tests are just as important as the product code and as such, reviewing changes to them is also just as important. This also helps create visibility for your changes so that others can observe what is going on.
-
-The advantages are numerous: improving code quality, more visibility on changes and their potential impact, avoiding duplication of effort, and creating general awareness of progress being made in various areas.
+[Avanade](https://www.avanade.com) is the leading provider of innovative digital and cloud services, business solutions and design-led experiences on the Microsoft ecosystem, and the power behind the Accenture Microsoft Business Group.
