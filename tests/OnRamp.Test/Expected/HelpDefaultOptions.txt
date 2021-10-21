@@ -1,0 +1,22 @@
+﻿OnRamp Code Generator.
+
+Usage: OnRamp [options]
+
+Options:
+  -?|-h|--help              Show help information.
+  -s|--script               Script orchestration file/resource name.
+  -c|--config               Configuration data file name.
+  -o|--output               Output directory path.
+  -a|--assembly             Assembly containing embedded resources (multiple can
+                            be specified in probing order).
+  -p|--param                Parameter expressed as a 'Name=Value' pair (multiple
+                            can be specified).
+  -cs|--connection-string   Database connection string.
+  -cv|--connection-varname  Database connection string environment variable
+                            name.
+  -enc|--expect-no-changes  Indicates to expect _no_ changes in the artefact
+                            output (e.g. error within build pipeline).
+  -sim|--simulation         Indicates whether the code-generation is a
+                            simulation (i.e. does not create/update any
+                            artefacts).
+

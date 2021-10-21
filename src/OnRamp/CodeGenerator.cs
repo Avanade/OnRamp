@@ -209,7 +209,7 @@ namespace OnRamp
         /// <param name="script">The <see cref="CodeGenScriptItem"/> to be executed.</param>
         /// <param name="statistics">The corresponding <see cref="CodeGenStatistics"/> for the <paramref name="script"/> execution.</param>
         /// <remarks>Default implementation will <see cref="ILogger">log</see> template details where appropriate.</remarks>
-        protected virtual void OnBeforeScript(CodeGenScriptItem script, CodeGenStatistics statistics) => script.Root?.CodeGenArgs?.Logger?.LogInformation(" Template: {template} {text}", script, script.Text == null ? string.Empty : $"({script.Text})");
+        protected virtual void OnBeforeScript(CodeGenScriptItem script, CodeGenStatistics statistics) => script.Root?.CodeGenArgs?.Logger?.LogInformation(" Template: {template} {text}", script.Template, script.Text == null ? string.Empty : $"({script.Text})");
 
         /// <summary>
         /// Handles the code generated content after it has been generated.

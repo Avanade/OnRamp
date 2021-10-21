@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
+using OnRamp.Console;
 using System;
 using System.Reflection;
 
-namespace OnRamp.Console
+namespace OnRamp
 {
     /// <summary>
     /// Console that facilitates the code generation by managing the standard console command-line arguments/options.

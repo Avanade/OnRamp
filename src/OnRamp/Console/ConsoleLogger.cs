@@ -11,13 +11,13 @@ namespace OnRamp.Console
     /// </summary>
     public class ConsoleLogger : ILogger
     {
-        private readonly IConsole _console;
+        private readonly IConsole? _console;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleLogger"/>.
         /// </summary>
-        /// <param name="console"></param>
-        public ConsoleLogger(IConsole console) => _console = console ?? throw new ArgumentNullException(nameof(console));
+        /// <param name="console">The <see cref="IConsole"/>; where <c>null</c> will default to using <see cref="System.Console"/>.</param>
+        public ConsoleLogger(IConsole? console = null) => _console = console;
 
         /// <inheritdoc />
         public IDisposable BeginScope<TState>(TState state) => NullScope.Default;
@@ -36,27 +36,53 @@ namespace OnRamp.Console
             if (exception != null)
                 message += Environment.NewLine + exception;
 
-            var foregroundColor = _console.ForegroundColor;
-
-            switch (logLevel)
+            ConsoleColor foregroundColor;
+            if (_console == null)
             {
-                case LogLevel.Critical:
-                case LogLevel.Error:
-                    _console.ForegroundColor = ConsoleColor.Red;
-                    _console.Error.WriteLine(message);
-                    break;
+                foregroundColor = System.Console.ForegroundColor;
+                switch (logLevel)
+                {
+                    case LogLevel.Critical:
+                    case LogLevel.Error:
+                        System.Console.ForegroundColor = ConsoleColor.Red;
+                        System.Console.Error.WriteLine(message);
+                        break;
 
-                case LogLevel.Warning:
-                    _console.ForegroundColor = ConsoleColor.Yellow;
-                    _console.Out.WriteLine(message);
-                    break;
+                    case LogLevel.Warning:
+                        System.Console.ForegroundColor = ConsoleColor.Yellow;
+                        System.Console.Out.WriteLine(message);
+                        break;
 
-                default:
-                    _console.Out.WriteLine(message);
-                    break;
+                    default:
+                        System.Console.Out.WriteLine(message);
+                        break;
+                }
+
+                System.Console.ForegroundColor = foregroundColor;
             }
+            else
+            {
+                foregroundColor = _console.ForegroundColor;
+                switch (logLevel)
+                {
+                    case LogLevel.Critical:
+                    case LogLevel.Error:
+                        _console.ForegroundColor = ConsoleColor.Red;
+                        _console.Error.WriteLine(message);
+                        break;
 
-            _console.ForegroundColor = foregroundColor;
+                    case LogLevel.Warning:
+                        _console.ForegroundColor = ConsoleColor.Yellow;
+                        _console.Out.WriteLine(message);
+                        break;
+
+                    default:
+                        _console.Out.WriteLine(message);
+                        break;
+                }
+
+                _console.ForegroundColor = foregroundColor;
+            }
         }
 
         /// <summary>

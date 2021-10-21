@@ -102,7 +102,7 @@ namespace OnRamp.Database
         /// <summary>
         /// Gets the corresponding .NET <see cref="System.Type"/> name.
         /// </summary>
-        public string DotNetType => string.IsNullOrEmpty(Type) ? "string" : DbTypeHelper.GetDotNetTypeName(Type);
+        public string DotNetType => string.IsNullOrEmpty(Type) ? "string" : DbType.GetDotNetTypeName(Type);
 
         /// <summary>
         /// Gets the fully defined SQL type.
@@ -112,7 +112,7 @@ namespace OnRamp.Database
             get
             {
                 var sb = new StringBuilder(Type!.ToUpperInvariant());
-                if (DbTypeHelper.TypeIsString(Type))
+                if (DbType.TypeIsString(Type))
                     sb.Append(Length.HasValue && Length.Value > 0 ? $"({Length.Value})" : "(MAX)");
 
                 sb.Append(Type.ToUpperInvariant() switch

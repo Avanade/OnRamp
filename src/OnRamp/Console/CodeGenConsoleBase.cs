@@ -147,6 +147,7 @@ namespace OnRamp.Console
         public async Task<int> RunAsync(string[] args)
         {
             Args.Logger ??= new ConsoleLogger(PhysicalConsole.Singleton);
+            Utility.HandlebarsHelpers.Logger ??= Args.Logger;
 
             // Set up the app.
             using var app = new CommandLineApplication(PhysicalConsole.Singleton) { Name = Name, Description = Description };

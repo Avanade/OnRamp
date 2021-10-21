@@ -7,7 +7,7 @@ using System.IO;
 namespace OnRamp.Utility
 {
     /// <summary>
-    /// The core generic code generator that manages the <b>Handlebars</b> compilation (cached for performance) and enables the corresponding <see cref="Generate"/> (one or more invocations).
+    /// The core code generator that manages the <b>Handlebars</b> compilation (cached for performance) and enables the corresponding <see cref="Generate"/> (one or more invocations).
     /// </summary>
     public class HandlebarsCodeGenerator
     {
@@ -45,7 +45,7 @@ namespace OnRamp.Utility
         /// </summary>
         /// <param name="context">The primary context value referenced within the template.</param>
         /// <param name="data">The optional secondary data.</param>
-        /// <returns></returns>
+        /// <returns>The resulting generated output.</returns>
         public string Generate(object? context, object? data = null) => _template(context, data);
     }
 }

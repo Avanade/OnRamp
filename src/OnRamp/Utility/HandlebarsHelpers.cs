@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
 using HandlebarsDotNet;
+using Microsoft.Extensions.Logging;
 using OnRamp.Config;
+using OnRamp.Console;
 using System.Collections;
 using System.Globalization;
 using System.Linq;
@@ -14,6 +16,11 @@ namespace OnRamp.Utility
     public static class HandlebarsHelpers
     {
         private static bool _areRegistered = false;
+
+        /// <summary>
+        /// Gets or sets the global logger used by the <c>log</c> helper.
+        /// </summary>
+        public static ILogger? Logger { get; set; }
 
         /// <summary>
         /// Registers all of the required Handlebars helpers.
@@ -91,7 +98,7 @@ namespace OnRamp.Utility
                 context.Template(writer, parameters);
             });
 
-            // Will check that any of the arguments have a <c>true</c> value where bool; otherwise, non-null.
+            // Will check that any of the arguments have a <c>true</c> value where bool; otherwise, non-null value.
             Handlebars.RegisterHelper("ifor", (writer, context, parameters, args) =>
             {
                 foreach (var arg in args)
@@ -118,14 +125,22 @@ namespace OnRamp.Utility
                 context.Inverse(writer, parameters);
             });
 
-            // Initiate a breakpoint in the debugger.
-            Handlebars.RegisterHelper("debuggerbreakpoint", (writer, context, parameters, args) =>
+            // Logs using the String.Format.
+            Handlebars.RegisterHelper("log-info", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogInformation(FormatString(parameters)));
+            Handlebars.RegisterHelper("log-warning", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogWarning(FormatString(parameters)));
+            Handlebars.RegisterHelper("log-error", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogError(FormatString(parameters)));
+            Handlebars.RegisterHelper("log-debug", (writer, context, parameters) => System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(parameters)}"));
+
+            // Logs using the String.Format to the debugger and then initiates a break in the debugger itself.
+            Handlebars.RegisterHelper("debug", (writer, context, parameters) =>
             {
+                System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(parameters)}");
                 System.Diagnostics.Debugger.Break();
             });
 
-            // Converts a value to lowercase.
+            // Converts a value to lowercase or uppercase.
             Handlebars.RegisterHelper("lower", (writer, context, parameters) => writer.WriteSafeString(parameters.FirstOrDefault()?.ToString()?.ToLowerInvariant() ?? ""));
+            Handlebars.RegisterHelper("upper", (writer, context, parameters) => writer.WriteSafeString(parameters.FirstOrDefault()?.ToString()?.ToUpperInvariant() ?? ""));
 
             // NOTE: Any ending in 'x' are to explicitly ignore special names!!!
 
@@ -141,14 +156,23 @@ namespace OnRamp.Utility
             Handlebars.RegisterHelper("private", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToPrivateCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
             Handlebars.RegisterHelper("privatex", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToPrivateCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
+            // Converts a value to snake case.
+            Handlebars.RegisterHelper("snake", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSnakeCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("snakex", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSnakeCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+
+            // Converts a value to kebab case.
+            Handlebars.RegisterHelper("kebab", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToKebabCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("kebabx", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToKebabCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+
+            // Converts a value to sentence case.
             Handlebars.RegisterHelper("sentence", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSentenceCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
             Handlebars.RegisterHelper("sentencex", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSentenceCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to the c# '<see cref="value"/>' comments equivalent.
-            Handlebars.RegisterHelper("seecomments", (writer, context, parameters) => writer.WriteSafeString(ConfigBase.ToSeeComments(parameters.FirstOrDefault()?.ToString())));
+            Handlebars.RegisterHelper("see-comments", (writer, context, parameters) => writer.WriteSafeString(ConfigBase.ToSeeComments(parameters.FirstOrDefault()?.ToString())));
 
-            // Inserts indent spaces based on the passed index value.
-            Handlebars.RegisterHelper("indent", (writer, context, parameters) => writer.WriteSafeString(new string(' ', 4 * (int)(parameters.FirstOrDefault() ?? 0))));
+            // Inserts indent spaces based on the passed count value.
+            Handlebars.RegisterHelper("indent", (writer, context, parameters) => writer.WriteSafeString(new string(' ', (int)(parameters.FirstOrDefault() ?? 0))));
 
             // Adds a value to a value.
             Handlebars.RegisterHelper("add", (writer, context, parameters) =>
@@ -256,6 +280,19 @@ namespace OnRamp.Utility
                 return bool.Parse(rval.ToString()!);
             else
                 return int.Parse(rval.ToString()!, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Format a string using the first parameter as string format and the remainder of parameters as the arguments.
+        /// </summary>
+        private static string? FormatString(Arguments parameters)
+        {
+            if (parameters.Length == 0)
+                return null;
+            else if (parameters.Length == 1)
+                return parameters[0].ToString();
+            else
+                return string.Format(parameters[0].ToString()!, parameters.TakeLast(parameters.Length - 1).ToArray());
         }
     }
 }

@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
 using System;
-using System.Data.Common;
 
 namespace OnRamp.Database
 {
     /// <summary>
-    /// Provides Database Type mappings.
+    /// Provides Database Type helper functions.
     /// </summary>
-    public static class DbTypeHelper
+    public static class DbType
     {
         /// <summary>
         /// Indicates whether the database type maps to a <see cref="string"/>.
@@ -138,26 +137,6 @@ namespace OnRamp.Database
                 "GUID" => typeof(Guid),
                 _ => throw new InvalidOperationException($"Database data type '{dbType}' does not have corresponding .NET type mapping defined."),
             };
-        }
-
-        /// <summary>
-        /// Gets the named <see cref="DbDataReader"/> column value.
-        /// </summary>
-        /// <typeparam name="T">The value <see cref="Type"/>.</typeparam>
-        /// <param name="dr">The <see cref="DbDataReader"/>.</param>
-        /// <param name="name">The column name.</param>
-        /// <returns>The value.</returns>
-        public static T GetValue<T>(this DbDataReader dr, string name)
-        {
-            var i = dr.GetOrdinal(name);
-            if (dr.IsDBNull(i))
-                return default!;
-
-            var nt = Nullable.GetUnderlyingType(typeof(T));
-            if (nt == null)
-                return dr.GetFieldValue<T>(i);
-            else
-                return (T)Convert.ChangeType(dr.GetValue(i), nt, System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }

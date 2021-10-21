@@ -5,6 +5,7 @@ using McMaster.Extensions.CommandLineUtils.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -42,7 +43,8 @@ namespace OnRamp.Console
             {
                 try
                 {
-                    list.Add(Assembly.Load(name!));
+                    // Load from the specified file on the file system or by using its long form name. 
+                    list.Add(File.Exists(name) ? Assembly.LoadFrom(name!) : Assembly.Load(name!));
                 }
                 catch (Exception ex)
                 {
