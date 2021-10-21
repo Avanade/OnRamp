@@ -50,24 +50,24 @@ _OnRamp_ has been created to provide a rich and standardized foundation for orch
 
 The _OnRamp_ code-generation tooling is composed of the following:
 
-1. [Configuration](#Configuration) - data used as the input for to drive the code-generation and the underlying _templates_.
-2. [Templates](#Templates) - [Handlebars](https://handlebarsjs.com/guide/) templates that define a specific artefact's scripted content.
+1. [Configuration](#Configuration) - data used as the input to drive the code-generation via the underlying _templates_.
+2. [Templates](#Templates) - [Handlebars](https://handlebarsjs.com/guide/) templates that define a specific artefact's content.
 3. [Scripts](#Scripts) - orchestrates one or more _templates_ that are used to generate artefacts for a given _configuration_ input.
 
 <br/>
 
 ### Configuration
 
-The code-gen is driven by a configuration data source, in this case a YAML or JSON file. This acts as a type of DSL ([Domain Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language)) to define the key characteristics / properties that will be used to generate the required artefacts.
+The code-generation is driven by a configuration data source, in this case a YAML or JSON file. This acts as a type of DSL ([Domain Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language)) to define the key characteristics / properties that will be used to generate the required artefacts.
 
-A configuration consists of the following, which each ultimately inherit from [`ConfigBase`](./src/OnRamp/Config/ConfigBase.cs) for its base capabilities:
+Configuration consists of the following, which each ultimately inherit from [`ConfigBase`](./src/OnRamp/Config/ConfigBase.cs) for their base capabilities:
 
-- **Root node** - this must inherit from [`ConfigRootBase`](./src/OnRamp/Config/ConfigRootBase.cs) which enables additional runtime parameters enabled by [`IRootConfig`](./src/OnRamp/Config/IRootConfig.cs).
+- **Root node** - inherits from [`ConfigRootBase`](./src/OnRamp/Config/ConfigRootBase.cs) to enable additional runtime parameters ([`IRootConfig`](./src/OnRamp/Config/IRootConfig.cs)).
 - **Child nodes** - zero or more child nodes (hierarchical) that inherit from [`ConfigBase<TRoot, TParent>`](./src/OnRamp/Config/ConfigBaseT.cs) that specify the `Root` and `Parent` hierarchy.
 
 The advantage of using a .NET typed class for the configuration is that additional properties (computed at runtime) can be added to aid the code-generation process. The underlying `Prepare` method provides a consistent means to implement this logic at runtime.
 
-The following attributes are generally required when defining the .NET Types, as they enable validation, and corresponding schema/documentation generation (where required):
+The following attributes should be used when defining the .NET Types, as they enable validation, and corresponding schema/documentation generation (where required):
 
 Attribute | Description
 -|-
@@ -141,9 +141,9 @@ properties:
 
 ### Templates
 
-Once the code-gen configuration data source(s) have been defined, one or more _templates_ will be required to drive the artefact output. These templates are defined using [Handlebars](https://handlebarsjs.com/guide/) syntax. Template files can either be added as an embedded resource within a folder named `Templates` (primary), or referenced directly on the file system (secondary), to enable runtime access.
+Once the code-gen configuration data source has been defined, one or more templates will be required to define the artefact output. These templates are defined using [Handlebars](https://handlebarsjs.com/guide/) syntax. Template files can either be added as an embedded resource within a folder named `Templates` (primary), or referenced directly on the file system (secondary), to enable runtime access.
 
-Additionally, Handlebars has been [extended](./src/OnRamp/Utility/HandlebarsHelpers.cs) to add additional capabilities beyond what is available natively to further enable the required generated output:
+Additionally, Handlebars has been [extended](./src/OnRamp/Utility/HandlebarsHelpers.cs) to add additional capabilities beyond what is available [natively](https://handlebarsjs.com/guide/builtin-helpers.html) to further enable the required generated output:
 
 Function | Description
 -|-
@@ -166,8 +166,8 @@ Function | Description
 `log-error` | Logs ([`ILogger.LogInformation`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggerextensions.loginformation)) the arguments using `String.Format`.
 `log-warning` | Logs ([`ILogger.LogWarning`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggerextensions.logwarning)) the arguments using `String.Format`.
 `log-error` | Logs Logs ([`ILogger.LogError`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggerextensions.logerror)) the arguments using `String.Format`.
-`log-debug` | Logs ([Debug.WriteLine](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.writeline)) the arguments using `String.Format`.
-`debug` | Logs ([Debug.WriteLine](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.writeline)) the arguments using `String.Format`; then invokes  [`Debugger.Break`](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debugger.break).
+`log-debug` | Logs ([`Debug.WriteLine`](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.writeline)) the arguments using `String.Format`.
+`debug` | Logs ([`Debug.WriteLine`](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debug.writeline)) the arguments using `String.Format`; then invokes  [`Debugger.Break`](https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.debugger.break).
 
 Any functions that denote `String.Format` will result in the usage of the .NET [`String.Format`](https://docs.microsoft.com/en-us/dotnet/api/system.string.format) where the first argument is the format, and the remainder are the arguments.
 
@@ -191,7 +191,7 @@ Property | Description
 -|-
 `configType` | The expected .NET [Configuration](#Configuration) root node `Type` name (as used by [`Type.GetType`](https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype#System_Type_GetType_System_String_)). This ensures that the code generator will only be executed with the specified configuration source.
 `inherits` | A script file can inherit the script configuration from one or more parent script files specified by a script name array. This is intended to simplify/standardize the addition of additional artefact generation without the need to repeat.
-`editorType` | The .NET `Type` name (as used by [`Type.GetType`](https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype#System_Type_GetType_System_String_)) that provides an opportunity to modity the loaded configuration. The `Type` must implement [`IConfigEditor`](./src/OnRamp/Config/IConfigEditor.cs). This enables runtime changes to configuration where access to the underlying source code for the configuration is unavailable; see [Personalization](#Personalization).
+`editorType` | The .NET `Type` name (as used by [`Type.GetType`](https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype#System_Type_GetType_System_String_)) that provides an opportunity to modify the loaded configuration. The `Type` must implement [`IConfigEditor`](./src/OnRamp/Config/IConfigEditor.cs). This enables runtime changes to configuration where access to the underlying source code for the configuration is unavailable; see [Personalization](#Personalization).
 `generators` | A collection of none of more scripted generators.
 
 The following are the `generators` collection [`CodeGenScriptItem`](./src/OnRamp/Scripts/CodeGenScriptItem.cs) properties:
@@ -278,7 +278,7 @@ The recommended approach is to [invoke](#Invoke) the _OnRamp_ capabilities direc
 
 ### Invoke
 
-Where the out-of-the-box capabiltity of _OnRamp_ is acceptable, then simply invoking the [`CodeGenConsole`](./src/OnRamp/CodeGenConsole.cs) will perform the code-generation using the embedded resources. The command-line arguments need to be passed through to support the standard options. Additional method overrides exist to specify defaults or change behaviour as required. An example `Program.cs` is as follows:
+Where the out-of-the-box capabiltity of _OnRamp_ is acceptable, then simply invoking the [`CodeGenConsole`](./src/OnRamp/CodeGenConsole.cs) will perform the code-generation using the embedded resources. The command-line arguments need to be passed through to support the standard options. Additional methods exist to specify defaults or change behaviour as required. An example `Program.cs` is as follows:
 
 ``` csharp
 using OnRamp;
@@ -297,7 +297,7 @@ namespace My.Application
 
 ### Inherit
 
-The [`CodeGenConsoleBase`](./src/OnRamp/Console/CodeGenConsoleBase.cs) is designed to be inherited, with opportunities within to tailor the console application experience via the following key virtual methods:
+The [`CodeGenConsoleBase`](./src/OnRamp/Console/CodeGenConsoleBase.cs) is designed to be inherited, with opportunities within to tailor the console application experience via the following key overrideable methods:
 
 Method | Description
 -|-
@@ -326,10 +326,10 @@ The following database capabilities are provided:
 
 Class | Description
 -|-
-[`Database`](./src/OnRamp/Database/Database.cs) | Provides the core database access and related capabilities.
-[`DbTable`](./src/OnRamp/Database/DbTable.cs) | Provides the database _table_ schema properties.
-[`DbColumn`](./src/OnRamp/Database/DbColumn.cs) | Provides the database _column_ schema properties.
-[`DbType`](./src/OnRamp/Database/DbType.cs) | Provides the database _type_ helper functions.
+[`Database`](./src/OnRamp/Database/Database.cs) | Provides core database access and related capabilities.
+[`DbTable`](./src/OnRamp/Database/DbTable.cs) | Provides database _table_ schema properties.
+[`DbColumn`](./src/OnRamp/Database/DbColumn.cs) | Provides database _column_ schema properties.
+[`DbType`](./src/OnRamp/Database/DbType.cs) | Provides database _type_ helper functions.
 
 </br>
 
@@ -340,7 +340,7 @@ Some additional utility capabilites have been provided:
 Class | Description
 -|-
 [`JsonSchemaGenerator`](./src/OnRamp/Utility/JsonSchemaGenerator.cs) | Provides the capability to generate a [JSON Schema](https://json-schema.org/) from the [configuration](#Configuration). This can then be published to the likes of the [JSON Schema Store](https://www.schemastore.org/) so that it can be used in Visual Studio and Visual Studio Code (or other editor of choice) to provide editor intellisense and basic validation.
-[`MarkdownDocumentationGenerator`](./src/OnRamp/Utility/MarkdownDocumentationGenerator.cs) | Provides the capability to generate [markdown](https://en.wikipedia.org/wiki/Markdown) documentation files from the [configuration](#Configuration). These can then be published with the owning source code repository or to a wiki to provide corresponding documentation.
+[`MarkdownDocumentationGenerator`](./src/OnRamp/Utility/MarkdownDocumentationGenerator.cs) | Provides the capability to generate [markdown](https://en.wikipedia.org/wiki/Markdown) documentation files from the [configuration](#Configuration). These can then be published within the owning source code repository or to a wiki to provide corresponding documentation.
 [`StringConversion`](./src/OnRamp/Utility/StringConversion.cs) | Provides additional string conversions that are useful where generating code; for example: `ToCamelCase`, `ToPascalCase`, `ToPrivateCase`, `ToSentenceCase`, `ToSnakeCase`, and `ToKebabCase`.
 
 <br/>
