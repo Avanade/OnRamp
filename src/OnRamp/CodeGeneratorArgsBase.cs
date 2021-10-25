@@ -130,7 +130,10 @@ namespace OnRamp
             if (Parameters.TryGetValue(key, out var value))
                 return value;
 
-            return !throwWhereNotFound ? null : throw new CodeGenException($"Parameter '{key}' does not exist.");
+            if (throwWhereNotFound)
+                throw new CodeGenException($"Parameter '{key}' does not exist.");
+
+            return null!;
         }
     }
 }
