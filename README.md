@@ -14,7 +14,7 @@ This is intended to provide the base for code-generation tooling enabling a rich
 
 ## Package
 
-[![NuGet version](https://badge.fury.io/nu/OnRamp.svg)](https://badge.fury.io/nu/OnRamp)
+[![NuGet version](https://badge.fury.io/nu/OnRamp.svg)](https://badge.fury.io/nu/OnRamp) [![CI](https://github.com/Avanade/OnRamp/workflows/CI/badge.svg)](https://github.com/Avanade/OnRamp/actions?query=workflow%3ACI)
 
 The included [change log](CHANGELOG.md) details all key changes per published version.
 
