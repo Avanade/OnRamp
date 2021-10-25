@@ -216,7 +216,7 @@ generators:
 - { type: 'OnRamp.Test.Generators.PropertyGenerator, OnRamo.Test', template: PropertyExample.hbs, directory: "{{lookup Root.RuntimeParameters 'Directory'}}", file: '{{Name}}.txt' }
 ```
 
-An [`CodeGeneratorBase<TRootConfig, TGenConfig>`](./src/OnRamp/Generators/CodeGeneratorBaseT2.cs) example is as follows:
+A [`CodeGeneratorBase<TRootConfig, TGenConfig>`](./src/OnRamp/Generators/CodeGeneratorBaseT2.cs) example is as follows:
 
 ``` csharp
 // A generator that is targeted at the Root (EntityConfig); pre-selects automatically.
