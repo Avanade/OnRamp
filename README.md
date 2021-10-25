@@ -16,7 +16,7 @@ This is intended to provide the base for code-generation tooling enabling a rich
 
 [![NuGet version](https://badge.fury.io/nu/OnRamp.svg)](https://badge.fury.io/nu/OnRamp)
 
-The included [change log](CHANGELOG.md) details the changes per published version.
+The included [change log](CHANGELOG.md) details all key changes per published version.
 
 <br/>
 
