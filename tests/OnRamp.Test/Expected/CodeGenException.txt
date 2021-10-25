@@ -1,0 +1,16 @@
+﻿
+╔═╗┌┐┌╦═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬  
+║ ║│││╠╦╝├─┤│││├─┘  ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││  
+╚═╝┘└┘╩╚═┴ ┴┴ ┴┴    ╚═╝└─┘─┴┘└─┘  ╚═╝└─┘┘└┘   ╩ └─┘└─┘┴─┘
+
+OnRamp [vX.X.X]
+
+Config = 
+Script = ValidEntity.yaml
+OutDir = 
+ExpectNoChanges = False
+IsSimulation = False
+Parameters = none
+Assemblies = none
+
+Scripts:

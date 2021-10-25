@@ -1,0 +1,20 @@
+﻿
+╔═╗┌┐┌╦═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬  
+║ ║│││╠╦╝├─┤│││├─┘  ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││  
+╚═╝┘└┘╩╚═┴ ┴┴ ┴┴    ╚═╝└─┘─┴┘└─┘  ╚═╝└─┘┘└┘   ╩ └─┘└─┘┴─┘
+
+OnRamp [vX.X.X]
+
+Config = Data/ValidEntity.yaml
+Script = ValidEntity.yaml
+OutDir = 
+ExpectNoChanges = True
+IsSimulation = False
+Parameters:
+  Directory = XB400
+  AppName = Zzz
+Assemblies:
+  OnRamp.Test, Version=1.2.3.0, Culture=neutral, PublicKeyToken=null
+
+Scripts:
+ Template: EntityExample.hbs 

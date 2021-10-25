@@ -1,0 +1,30 @@
+﻿
+╔═╗┌┐┌╦═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬  
+║ ║│││╠╦╝├─┤│││├─┘  ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││  
+╚═╝┘└┘╩╚═┴ ┴┴ ┴┴    ╚═╝└─┘─┴┘└─┘  ╚═╝└─┘┘└┘   ╩ └─┘└─┘┴─┘
+
+OnRamp [vX.X.X]
+
+Config = Data/ValidEntity.yaml
+Script = ValidEntity.yaml
+OutDir = 
+ExpectNoChanges = False
+IsSimulation = False
+Parameters:
+  Directory = XB300
+  AppName = Zzz
+Assemblies:
+  OnRamp.Test, Version=1.2.3.0, Culture=neutral, PublicKeyToken=null
+
+Scripts:
+ Template: EntityExample.hbs 
+    Created -> xxx\XB300\Person.txt
+  [Files: Unchanged = 0, Updated = 0, Created = 1]
+ Template: PropertyExample.hbs (Example context)
+    Created -> xxx\XB300\Name.txt
+    Created -> xxx\XB300\Age.txt
+    Created -> xxx\XB300\Salary.txt
+  [Files: Unchanged = 0, Updated = 0, Created = 3]
+
+Complete. [XXXms, Files: Unchanged = 0, Updated = 0, Created = 4, TotalLines = 4]
+
