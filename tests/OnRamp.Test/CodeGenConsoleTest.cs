@@ -228,6 +228,12 @@ namespace OnRamp.Test
         /// </summary>
         private (int exitCode, string stdOut, string stdErr) ExecuteCommandLine(string args)
         {
+            System.Console.WriteLine($"Current dir: {Directory.GetCurrentDirectory()}");
+            foreach (var f in Directory.GetFiles(Directory.GetCurrentDirectory()))
+            {
+                System.Console.WriteLine($" > file: {f}");
+            }
+
             var process = new Process();
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.UseShellExecute = false;
