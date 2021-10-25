@@ -240,7 +240,7 @@ namespace OnRamp.Test
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-            process.StartInfo.FileName = "OnRamp.exe";
+            process.StartInfo.FileName = "OnRamp";
             process.StartInfo.Arguments = args;
             process.Start();
 
