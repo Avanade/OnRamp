@@ -291,6 +291,7 @@ namespace OnRamp.Test
 
             var cg = new CodeGenerator(new CodeGeneratorArgs("ValidEntity.yaml") { ExpectNoChanges = true }.AddAssembly(typeof(CodeGeneratorTest).Assembly).AddParameter("Directory", "F140"));
             var ex = Assert.Throws<CodeGenChangesFoundException>(() => cg.Generate("Data/ValidEntity.yaml"));
+            Assert.Warn(ex.Message);
             Assert.IsTrue(ex.Message.EndsWith("F140\\Person.txt' would be created as a result of the code generation."));
         }
 
