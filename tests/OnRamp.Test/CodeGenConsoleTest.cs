@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace OnRamp.Test
 {
@@ -228,11 +229,8 @@ namespace OnRamp.Test
         /// </summary>
         private (int exitCode, string stdOut, string stdErr) ExecuteCommandLine(string args)
         {
-            System.Console.WriteLine($"Current dir: {Directory.GetCurrentDirectory()}");
-            foreach (var f in Directory.GetFiles(Directory.GetCurrentDirectory()))
-            {
-                System.Console.WriteLine($" > file: {f}");
-            }
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Assert.Inconclusive($"This test is *only* supported on the Windows platform; otherwise, the Process.Start results in the following error.{Environment.NewLine}> A fatal error was encountered. The library 'libhostpolicy.so' required to execute the application was not found in '/home/runner/.dotnet'.");
 
             var process = new Process();
             process.StartInfo.CreateNoWindow = true;
