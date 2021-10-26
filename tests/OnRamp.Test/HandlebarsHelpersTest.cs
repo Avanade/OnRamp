@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using OnRamp.Utility;
+using System;
 
 namespace OnRamp.Test
 {
@@ -153,6 +154,27 @@ namespace OnRamp.Test
         }
 
         [Test]
+        public void PastTense()
+        {
+            var g = new HandlebarsCodeGenerator("{{past-tense Name}}");
+            Assert.AreEqual("Ordered", g.Generate(new { Name = "Order" }));
+        }
+
+        [Test]
+        public void Pluralize()
+        {
+            var g = new HandlebarsCodeGenerator("{{pluralize Name}}");
+            Assert.AreEqual("Orders", g.Generate(new { Name = "Order" }));
+        }
+
+        [Test]
+        public void Singularize()
+        {
+            var g = new HandlebarsCodeGenerator("{{singularize Name}}");
+            Assert.AreEqual("Order", g.Generate(new { Name = "Orders" }));
+        }
+
+        [Test]
         public void SeeComments()
         {
             var g = new HandlebarsCodeGenerator("{{see-comments Name}}");
@@ -171,6 +193,14 @@ namespace OnRamp.Test
         {
             var g = new HandlebarsCodeGenerator("{{add 4 '10' Count}}");
             Assert.AreEqual("12", g.Generate(new { Count = -2 }));
+        }
+
+        [Test]
+        public void Format()
+        {
+            var dt = new DateTime(2021, 10, 26, 08, 55, 16);
+            var g = new HandlebarsCodeGenerator("Date is {{format '{0:yyyy-MM-dd HH:mm:ss}' Date}}.");
+            Assert.AreEqual($"Date is {dt:yyyy-MM-dd HH:mm:ss}.", g.Generate(new { Date = dt }));
         }
 
         [Test]

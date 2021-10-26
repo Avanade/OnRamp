@@ -62,7 +62,7 @@ namespace OnRamp.Config
         public T GetRuntimeParameter<T>(string key, T defaultValue = default!)
         {
             if (RuntimeParameters != null && RuntimeParameters.TryGetValue(key, out var val))
-                return (T)Convert.ChangeType(val?.ToString(), typeof(T))!;
+                return (T)Convert.ChangeType(val, typeof(T))!;
             else
                 return defaultValue!;
         }
@@ -78,7 +78,7 @@ namespace OnRamp.Config
         {
             if (RuntimeParameters != null && RuntimeParameters.TryGetValue(key, out var val))
             {
-                value = (T)Convert.ChangeType(val?.ToString(), typeof(T))!;
+                value = (T)Convert.ChangeType(val, typeof(T))!;
                 return true;
             }
             else
@@ -87,5 +87,23 @@ namespace OnRamp.Config
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets the <see cref="DateTime.Now"/> value.
+        /// </summary>
+        /// <remarks>This provides a simple and consistent means to access this as a property value from a Handlebars template.</remarks>
+        public DateTime DateTimeNow => DateTime.Now;
+
+        /// <summary>
+        /// Gets the <see cref="DateTime.UtcNow"/> value.
+        /// </summary>
+        /// <remarks>This provides a simple and consistent means to access this as a property value from a Handlebars template.</remarks>
+        public DateTime DateTimeUtcNow => DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets a <see cref="Guid.NewGuid"/>.
+        /// </summary>
+        /// <remarks>This provides a simple and consistent means to access this as a property value from a Handlebars template.</remarks>
+        public Guid NewGuid => Guid.NewGuid();
     }
 }

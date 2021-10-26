@@ -143,7 +143,13 @@ properties:
 
 Once the code-gen configuration data source has been defined, one or more templates will be required to define the artefact output. These templates are defined using [Handlebars](https://handlebarsjs.com/guide/) syntax. Template files can either be added as an embedded resource within a folder named `Templates` (primary), or referenced directly on the file system (secondary), to enable runtime access.
 
-Additionally, Handlebars has been [extended](./src/OnRamp/Utility/HandlebarsHelpers.cs) to add additional capabilities beyond what is available [natively](https://handlebarsjs.com/guide/builtin-helpers.html) to further enable the required generated output:
+Additionally, Handlebars has been [extended](./src/OnRamp/Utility/HandlebarsHelpers.cs) to add additional capabilities beyond what is available [natively](https://handlebarsjs.com/guide/builtin-helpers.html) to further enable the required generated output. _Note_ that where any of the following documented functions denote `String.Format` will result in the usage of the .NET [`String.Format`](https://docs.microsoft.com/en-us/dotnet/api/system.string.format) where the first argument is the format, and the remainder are considered the arguments referenced by the format.
+
+<br/>
+
+#### Conditional functions
+
+The following functions represent additional Handlebars conditions:
 
 Function | Description
 -|-
@@ -154,15 +160,46 @@ Function | Description
 `ifval` | Checks that all of the arguments have a non-`null` value.
 `ifnull` | Checks that all of the arguments have a `null` value.
 `ifor` | Checks that any of the arguments have a `true` value where `bool`; otherwise, non-`null` value.
+
+<br/>
+
+#### String manipulation functions
+
+The following functions perform the specified string manipulation (generally using [`StringConverter`](./src/OnRamp/Utility/StringConverter.cs)) writing the output to the code-generated aretfact:
+
+Function | Description
+-|-
+`format` | Writes the arguments using `String.Format.`
 `lower` | Converts and writes a value as lower case.
 `upper` | Converts and writes a value as upper case.
 `camel` | Converts and writes a value as camel case.
 `pascal` | Converts and writes a value as pascal case.
 `private` | Converts and writes a value as private case.
 `sentence` | Converts and writes a value as sentence case.
+`past-tense` | Converts and writes a value as past tense.
+`pluralize` | Converts and writes a singularized value as the plural.
+`singularize` | Converts and writes a pluralized value as the single.
 `see-comments` | Converts and writes a value as a C# `<see cref="value"/>` comments equivalent.
+
+<br/>
+
+#### Miscellaneous functions
+
+The following functions perform miscellanous 
+
+Function | Description
+-|-
 `indent` | Inserts indent spaces based on the passed count value.
 `add` | Adds all the arguments and writes the sum.
+
+<br/>
+
+#### Troubleshooting functions
+
+As there is no native integrated means to set a breakpoint and debug the template directly, logging and debugger functions have been added to aid troubleshooting.
+
+Function | Description
+-|-
 `log-error` | Logs ([`ILogger.LogInformation`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggerextensions.loginformation)) the arguments using `String.Format`.
 `log-warning` | Logs ([`ILogger.LogWarning`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggerextensions.logwarning)) the arguments using `String.Format`.
 `log-error` | Logs Logs ([`ILogger.LogError`](https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.logging.loggerextensions.logerror)) the arguments using `String.Format`.
@@ -171,10 +208,13 @@ Function | Description
 
 Any functions that denote `String.Format` will result in the usage of the .NET [`String.Format`](https://docs.microsoft.com/en-us/dotnet/api/system.string.format) where the first argument is the format, and the remainder are the arguments.
 
-An example usage is as follows:
+#### Examples
+
+Example usage is as follows:
 
 ``` handlebars
 {{#ifeq Type 'int' 'decimal'}}Is a number.{{/ifeq}}
+{{format '{0:yyyy-MM-dd HH:mm:ss}' Order.Date}}
 {{camel Name}}
 {{log-warn 'The name {0} is not valid.' Name}}
 ```
@@ -341,13 +381,13 @@ Class | Description
 -|-
 [`JsonSchemaGenerator`](./src/OnRamp/Utility/JsonSchemaGenerator.cs) | Provides the capability to generate a [JSON Schema](https://json-schema.org/) from the [configuration](#Configuration). This can then be published to the likes of the [JSON Schema Store](https://www.schemastore.org/) so that it can be used in Visual Studio and Visual Studio Code (or other editor of choice) to provide editor intellisense and basic validation.
 [`MarkdownDocumentationGenerator`](./src/OnRamp/Utility/MarkdownDocumentationGenerator.cs) | Provides the capability to generate [markdown](https://en.wikipedia.org/wiki/Markdown) documentation files from the [configuration](#Configuration). These can then be published within the owning source code repository or to a wiki to provide corresponding documentation.
-[`StringConversion`](./src/OnRamp/Utility/StringConversion.cs) | Provides additional string conversions that are useful where generating code; for example: `ToCamelCase`, `ToPascalCase`, `ToPrivateCase`, `ToSentenceCase`, `ToSnakeCase`, and `ToKebabCase`.
+[`StringConverter`](./src/OnRamp/Utility/StringConverter.cs) | Provides additional string conversions that are useful where generating code; for example: `ToCamelCase`, `ToPascalCase`, `ToPrivateCase`, `ToSentenceCase`, `ToSnakeCase`, `ToKebabCase`, `ToPastTense`, `ToPlural`, `ToSingle`, `ToComments` and `ToSeeComments`.
 
 <br/>
 
 ## License
 
-_OnRamp_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
+_OnRamp_ is open source under the [MIT license](./LICENSE.md) and is free for commercial use.
 
 <br/>
 

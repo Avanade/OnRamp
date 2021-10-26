@@ -61,7 +61,7 @@ namespace OnRamp.Utility
                 {
                     Type = type,
                     Class = csa,
-                    Name = jpa.PropertyName ?? StringConversion.ToCamelCase(pi.Name),
+                    Name = jpa.PropertyName ?? StringConverter.ToCamelCase(pi.Name),
                     Property = pi,
                     Psa = pi.GetCustomAttribute<CodeGenPropertyAttribute>()
                 };
