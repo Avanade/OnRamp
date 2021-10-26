@@ -90,10 +90,11 @@ namespace OnRamp.Config
         }
 
         /// <summary>
-        /// Converts <paramref name="text"/> to c# Comments ('{{xyx}}' would become 'see cref=' XML, and any &lt;&gt; within the xyz would become {} respectively). 
+        /// Converts any '{{ }}' delimited <paramref name="text"/> to c# comments equivalent; e.g. '{{xyz}}' would become '&lt;see cref="xyz"/&gt;'. 
         /// </summary>
         /// <param name="text">The text.</param>
         /// <returns>The converted text.</returns>
+        /// <remarks>Additionally, any '&lt;' or '&gt;' within the xyz would become '{' or '}' respectively; e.g. '{{List&lt;int&gt;}} would become '&lt;see cref="List{int}"/&gt;'.</remarks>
         public static string? ToComments(string? text)
         {
             if (string.IsNullOrEmpty(text))
@@ -114,17 +115,18 @@ namespace OnRamp.Config
                 string sub = s.Substring(start, end - start + 2);
                 string? mid = ReplaceGenericsBracketWithCommentsBracket(sub[2..^2]);
 
-                s = s.Replace(sub, string.Format(CultureInfo.InvariantCulture, "<see cref=\"{0}\"/>", mid), StringComparison.InvariantCulture);
+                s = s.Replace(sub, ToSeeComments(mid));
             }
 
             return s;
         }
 
         /// <summary>
-        /// Converts <paramref name="text"/> to c# 'see cref=' comments ('List&lt;int&gt;' would become '&lt;see cref="List{int}/&gt;' respectively). 
+        /// Converts <paramref name="text"/> to c# '&lt;see cref="xyz"/&gt;'; e.g. 'ABC' would become '&lt;see cref="ABC"/&gt;'. 
         /// </summary>
         /// <param name="text">The text.</param>
         /// <returns>The converted text.</returns>
+        /// <remarks>Additionally, any '&lt;' or '&gt;' within the xyz would become '{' or '}' respectively; e.g. 'List&lt;int&gt;' would become '&lt;see cref="List{int}"/&gt;'.</remarks>
         public static string? ToSeeComments(string? text)
         {
             if (string.IsNullOrEmpty(text))
@@ -205,7 +207,7 @@ namespace OnRamp.Config
         /// <param name="baseType">The base generic <see cref="Type"/>.</param>
         /// <param name="type">The <see cref="Type"/> that is being verifed as being a subclass (inherits from).</param>
         /// <returns><c>true</c> where is a valid subclass; otherwise, <c>false</c>.</returns>
-        protected static bool IsSubclassOfBaseType(Type baseType, Type type)
+        public static bool IsSubclassOfBaseType(Type baseType, Type type)
         { 
             if (baseType == null)
                 throw new ArgumentNullException(nameof(baseType));
@@ -250,10 +252,10 @@ namespace OnRamp.Config
         /// <param name="key">The key.</param>
         /// <param name="defaultValue">The default value where the property is not found.</param>
         /// <returns>The value.</returns>
-        public T GetExtraProperty<T>(string key, T defaultValue = default!)
+        public T GetExtraProperty<T>(string key, T defaultValue = default!) where T : JToken
         {
             if (ExtraProperties != null && ExtraProperties.TryGetValue(key, out var val))
-                return (T)Convert.ChangeType(val.ToString(), typeof(T));
+                return (T)Convert.ChangeType(val, typeof(T));
             else
                 return defaultValue!;
         }
@@ -265,11 +267,11 @@ namespace OnRamp.Config
         /// <param name="key">The key.</param>
         /// <param name="value">The corresponding value.</param>
         /// <returns><c>true</c> if the <paramref name="key"/> is found; otherwise, <c>false</c>.</returns>
-        public bool TryGetExtraProperty<T>(string key, out T value)
+        public bool TryGetExtraProperty<T>(string key, out T value) where T : JToken
         {
             if (ExtraProperties != null && ExtraProperties.TryGetValue(key, out var val))
             {
-                value = (T)Convert.ChangeType(val.ToString(), typeof(T));
+                value = (T)Convert.ChangeType(val, typeof(T));
                 return true;
             }
             else
