@@ -44,7 +44,7 @@ namespace OnRamp.Utility
 
             jtw.WriteStartObject();
             jtw.WritePropertyName("title");
-            jtw.WriteValue(title ?? StringConversion.ToSentenceCase(type.Name));
+            jtw.WriteValue(title ?? StringConverter.ToSentenceCase(type.Name));
             jtw.WritePropertyName("$schema");
             jtw.WriteValue("https://json-schema.org/draft-04/schema#");
             jtw.WritePropertyName("definitions");
@@ -101,7 +101,7 @@ namespace OnRamp.Utility
             jtw.WritePropertyName("type");
             jtw.WriteValue("object");
             jtw.WritePropertyName("title");
-            jtw.WriteValue(CleanString(csa.Title) ?? StringConversion.ToSentenceCase(csa.Name)!);
+            jtw.WriteValue(CleanString(csa.Title) ?? StringConverter.ToSentenceCase(csa.Name)!);
             if (csa.Description != null)
             {
                 jtw.WritePropertyName("description");
@@ -119,7 +119,7 @@ namespace OnRamp.Utility
                 if (jpa == null)
                     continue;
 
-                var name = jpa.PropertyName ?? StringConversion.ToCamelCase(pi.Name)!;
+                var name = jpa.PropertyName ?? StringConverter.ToCamelCase(pi.Name)!;
                 jtw.WritePropertyName(name);
                 jtw.WriteStartObject();
 
@@ -129,7 +129,7 @@ namespace OnRamp.Utility
                     jtw.WritePropertyName("type");
                     jtw.WriteValue(GetJsonType(pi));
                     jtw.WritePropertyName("title");
-                    jtw.WriteValue(CleanString(psa.Title) ?? StringConversion.ToSentenceCase(name)!);
+                    jtw.WriteValue(CleanString(psa.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (psa.Description != null)
                     {
                         jtw.WritePropertyName("description");
@@ -159,7 +159,7 @@ namespace OnRamp.Utility
                     jtw.WritePropertyName("type");
                     jtw.WriteValue("array");
                     jtw.WritePropertyName("title");
-                    jtw.WriteValue(CleanString(pcsa.Title) ?? StringConversion.ToSentenceCase(name)!);
+                    jtw.WriteValue(CleanString(pcsa.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (pcsa.Description != null)
                     {
                         jtw.WritePropertyName("description");

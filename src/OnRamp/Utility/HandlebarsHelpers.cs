@@ -125,6 +125,15 @@ namespace OnRamp.Utility
                 context.Inverse(writer, parameters);
             });
 
+            // Formats and writes value.
+            Handlebars.RegisterHelper("format", (writer, context, parameters) => writer.WriteSafeString(FormatString(parameters)));
+
+            // Past-tense, pluralize and singularize.
+            Handlebars.RegisterHelper("past-tense", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPastTense(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("pluralize", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPlural(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("singularize", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSingle(parameters.FirstOrDefault()?.ToString()) ?? ""));
+
+
             // Logs using the String.Format.
             Handlebars.RegisterHelper("log-info", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogInformation(FormatString(parameters)));
             Handlebars.RegisterHelper("log-warning", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogWarning(FormatString(parameters)));
@@ -145,31 +154,31 @@ namespace OnRamp.Utility
             // NOTE: Any ending in 'x' are to explicitly ignore special names!!!
 
             // Converts a value to camelcase.
-            Handlebars.RegisterHelper("camel", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToCamelCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("camelx", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToCamelCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("camel", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToCamelCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("camelx", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToCamelCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to pascalcase.
-            Handlebars.RegisterHelper("pascal", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToPascalCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("pascalx", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToPascalCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("pascal", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPascalCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("pascalx", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPascalCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to private case.
-            Handlebars.RegisterHelper("private", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToPrivateCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("privatex", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToPrivateCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("private", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPrivateCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("privatex", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPrivateCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to snake case.
-            Handlebars.RegisterHelper("snake", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSnakeCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("snakex", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSnakeCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("snake", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSnakeCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("snakex", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSnakeCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to kebab case.
-            Handlebars.RegisterHelper("kebab", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToKebabCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("kebabx", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToKebabCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("kebab", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToKebabCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("kebabx", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToKebabCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to sentence case.
-            Handlebars.RegisterHelper("sentence", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSentenceCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("sentencex", (writer, context, parameters) => writer.WriteSafeString(StringConversion.ToSentenceCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("sentence", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSentenceCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("sentencex", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSentenceCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to the c# '<see cref="value"/>' comments equivalent.
-            Handlebars.RegisterHelper("see-comments", (writer, context, parameters) => writer.WriteSafeString(ConfigBase.ToSeeComments(parameters.FirstOrDefault()?.ToString())));
+            Handlebars.RegisterHelper("see-comments", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSeeComments(parameters.FirstOrDefault()?.ToString())));
 
             // Inserts indent spaces based on the passed count value.
             Handlebars.RegisterHelper("indent", (writer, context, parameters) => writer.WriteSafeString(new string(' ', (int)(parameters.FirstOrDefault() ?? 0))));

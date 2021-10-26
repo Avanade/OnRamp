@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -73,67 +72,6 @@ namespace OnRamp.Config
         /// <param name="compareTo">The value to compare to.</param>
         /// <returns><c>true</c> where equal; otherwise, <c>false</c>.</returns>
         public static bool CompareValue(bool? propertyValue, bool compareTo) => propertyValue != null && propertyValue == compareTo;
-
-        /// <summary>
-        /// Converts <paramref name="text"/> to c# 'see cref=' Comments ('List&lt;int&gt;' would become 'List{int}' respectively). 
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>The converted text.</returns>
-        private static string? ReplaceGenericsBracketWithCommentsBracket(string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            var s = text.Replace("<", "{", StringComparison.InvariantCulture);
-            s = s.Replace(">", "}", StringComparison.InvariantCulture);
-            return s;
-        }
-
-        /// <summary>
-        /// Converts any '{{ }}' delimited <paramref name="text"/> to c# comments equivalent; e.g. '{{xyz}}' would become '&lt;see cref="xyz"/&gt;'. 
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>The converted text.</returns>
-        /// <remarks>Additionally, any '&lt;' or '&gt;' within the xyz would become '{' or '}' respectively; e.g. '{{List&lt;int&gt;}} would become '&lt;see cref="List{int}"/&gt;'.</remarks>
-        public static string? ToComments(string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            var s = text;
-            while (true)
-            {
-                var start = s.IndexOf("{{", StringComparison.InvariantCultureIgnoreCase);
-                var end = s.IndexOf("}}", StringComparison.InvariantCultureIgnoreCase);
-
-                if (start < 0 && end < 0)
-                    break;
-
-                if (start < 0 || end < 0 || end < start)
-                    throw new CodeGenException("Start and End {{ }} parameter mismatch.", text);
-
-                string sub = s.Substring(start, end - start + 2);
-                string? mid = ReplaceGenericsBracketWithCommentsBracket(sub[2..^2]);
-
-                s = s.Replace(sub, ToSeeComments(mid));
-            }
-
-            return s;
-        }
-
-        /// <summary>
-        /// Converts <paramref name="text"/> to c# '&lt;see cref="xyz"/&gt;'; e.g. 'ABC' would become '&lt;see cref="ABC"/&gt;'. 
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>The converted text.</returns>
-        /// <remarks>Additionally, any '&lt;' or '&gt;' within the xyz would become '{' or '}' respectively; e.g. 'List&lt;int&gt;' would become '&lt;see cref="List{int}"/&gt;'.</remarks>
-        public static string? ToSeeComments(string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            return $"<see cref=\"{ReplaceGenericsBracketWithCommentsBracket(text)}\"/>";
-        }
 
         /// <summary>
         /// Build the standardized qualified key name.
@@ -322,10 +260,5 @@ namespace OnRamp.Config
                 return false;
             }
         }
-
-        /// <summary>
-        /// Gets the <see cref="DateTime.UtcNow"/> as a formatted timestamp.
-        /// </summary>
-        public static string UtcDateTimeStamp => DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
     }
 }

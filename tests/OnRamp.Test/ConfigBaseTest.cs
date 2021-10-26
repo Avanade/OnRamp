@@ -2,7 +2,6 @@
 using NUnit.Framework;
 using OnRamp.Config;
 using OnRamp.Test.Config;
-using System;
 using System.Collections.Generic;
 
 namespace OnRamp.Test
@@ -95,20 +94,6 @@ namespace OnRamp.Test
         }
 
         [Test]
-        public void ToComments()
-        {
-            Assert.AreEqual("See <see cref=\"Xyz\"/>.", ConfigBase.ToComments("See {{Xyz}}."));
-            Assert.AreEqual("See <see cref=\"List{Xyz}\"/>.", ConfigBase.ToComments("See {{List<Xyz>}}."));
-        }
-
-        [Test]
-        public void ToSeeComments()
-        {
-            Assert.AreEqual("<see cref=\"Xyz\"/>", ConfigBase.ToSeeComments("Xyz"));
-            Assert.AreEqual("<see cref=\"List{Xyz}\"/>", ConfigBase.ToSeeComments("List<Xyz>"));
-        }
-
-        [Test]
         public void ExtraProperties()
         {
             var ec = new EntityConfig { ExtraProperties = new Dictionary<string, JToken> { { "XXX", new JValue("AAA") } } };
@@ -147,18 +132,6 @@ namespace OnRamp.Test
 
             Assert.IsFalse(ec.TryGetCustomProperty("YYY", out sv));
             Assert.IsNull(sv);
-        }
-
-        [Test]
-        public void UtcDateTimeStamp()
-        {
-            var now = DateTime.UtcNow;
-            now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
-
-            var dts = ConfigBase.UtcDateTimeStamp;
-
-            Assert.IsTrue(DateTime.TryParseExact(dts, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var dt));
-            Assert.IsTrue(dt >= now);
         }
     }
 }
