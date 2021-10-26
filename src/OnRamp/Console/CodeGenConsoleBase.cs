@@ -287,7 +287,7 @@ namespace OnRamp.Console
                 }
 
                 // Run the code generator.
-                var stats = OnCodeGeneration() ?? throw new InvalidOperationException("A CodeGenStatistics instance must be returned from OnRunCodeGenerator.");
+                var stats = OnCodeGeneration() ?? throw new InvalidOperationException($"A {nameof(CodeGenStatistics)} instance must be returned from {nameof(OnCodeGeneration)}.");
                 if (stats == null)
                     return 4;
 
@@ -384,7 +384,7 @@ namespace OnRamp.Console
         /// <summary>
         /// Invoked to write the footer (<see cref="CodeGenStatistics.ToSummaryString"/>) information to the <see cref="Logger"/>.
         /// </summary>
-        /// <param name="stats"></param>
+        /// <param name="stats">The <see cref="CodeGenStatistics"/> information.</param>
         protected virtual void OnWriteFooter(CodeGenStatistics stats)
         {
             Logger?.LogInformation(string.Empty);

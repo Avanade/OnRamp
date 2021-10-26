@@ -162,8 +162,8 @@ namespace OnRamp
 
                 config!.Prepare(config!, config!);
 
-                // Execute any 'after' custom editors.
-                foreach (var ce in editors)
+                // Execute any 'after' custom editors (in reverse order).
+                foreach (var ce in ((IEnumerable<IConfigEditor>)editors).Reverse())
                 {
                     ce.AfterPrepare(rootConfig);
                 }
