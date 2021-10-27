@@ -44,6 +44,25 @@ namespace OnRamp.Console
         }
 
         /// <summary>
+        /// Gets the base executable directory path.
+        /// </summary>
+        /// <returns>The base executable directory path.</returns>
+        /// <remarks>Uses <see cref="Environment.CurrentDirectory"/> and removes the last instance of <c>bin/debug</c> or <c>bin/release</c> where found in the path to find the base executable directory for code generation.</remarks>
+        public static string GetBaseExeDirectory()
+        {
+            var exeDir = Environment.CurrentDirectory;
+            var i = exeDir.LastIndexOf(Path.Combine("bin", "debug"), StringComparison.InvariantCultureIgnoreCase);
+            if (i > 0)
+                return exeDir[0..i];
+
+            i = exeDir.LastIndexOf(Path.Combine("bin", "release"), StringComparison.InvariantCultureIgnoreCase);
+            if (i > 0)
+                return exeDir[0..i];
+
+            return exeDir;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CodeGenConsole"/> class.
         /// </summary>
         /// <param name="name">The application/command name.</param>

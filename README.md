@@ -78,6 +78,10 @@ Attribute | Description
 
 The configuration must also use the [Newtonsoft Json.NET serializer attributes](https://www.newtonsoft.com/json/help/html/SerializationAttributes.htm) as [Json.NET](https://www.newtonsoft.com/json/help) is used internally to perform all JSON deserialization.
 
+<br/>
+
+#### Example
+
 An example is as follows:
 
 ``` csharp
@@ -208,7 +212,9 @@ Function | Description
 
 Any functions that denote `String.Format` will result in the usage of the .NET [`String.Format`](https://docs.microsoft.com/en-us/dotnet/api/system.string.format) where the first argument is the format, and the remainder are the arguments.
 
-#### Examples
+<br/>
+
+#### Example
 
 Example usage is as follows:
 
@@ -225,6 +231,10 @@ Example usage is as follows:
 
 To orchestrate the code generation, in terms of the [Templates](#Templates) to be used, a YAML-based script-like file is used. Script files can either be added as an embedded resource within a folder named `Scripts` (primary), or referenced directly on the file system (secondary), to enable runtime access.
 
+<br/>
+
+#### Root
+
 The following are the root [`CodeGenScript`](./src/OnRamp/Scripts/CodeGenScript.cs) properties:
 
 Property | Description
@@ -233,6 +243,10 @@ Property | Description
 `inherits` | A script file can inherit the script configuration from one or more parent script files specified by a script name array. This is intended to simplify/standardize the addition of additional artefact generation without the need to repeat.
 `editorType` | The .NET `Type` name (as used by [`Type.GetType`](https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype#System_Type_GetType_System_String_)) that provides an opportunity to modify the loaded configuration. The `Type` must implement [`IConfigEditor`](./src/OnRamp/Config/IConfigEditor.cs). This enables runtime changes to configuration where access to the underlying source code for the configuration is unavailable; see [Personalization](#Personalization).
 `generators` | A collection of none of more scripted generators.
+
+<br/>
+
+#### Generators
 
 The following are the `generators` collection [`CodeGenScriptItem`](./src/OnRamp/Scripts/CodeGenScriptItem.cs) properties:
 
@@ -246,6 +260,8 @@ Attribute | Description
 `text` | The text written to the log / console to enable additional context (optional).
 
 Any other YAML properties specified will be automatically passed in as runtime parameters (name/value pairs); see [`IRootConfig.RuntimeParameters`](./src/OnRamp/Config/IRootConfig.cs).
+
+#### Example
 
 An example of a Script YAML file is as follows:
 
