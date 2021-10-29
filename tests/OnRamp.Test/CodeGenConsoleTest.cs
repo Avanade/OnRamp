@@ -224,6 +224,16 @@ namespace OnRamp.Test
             Assert.AreEqual("File 'xxx\\XB400\\Person.txt' would be created as a result of the code generation.\r\n\r\n", ScrubText(stdErr));
         }
 
+        [Test]
+        public void C100_GetBaseExeDirectory()
+        {
+            var ed = Environment.CurrentDirectory;
+            Assert.IsTrue(ed.Contains(Path.Combine("bin", "debug"), StringComparison.InvariantCultureIgnoreCase) || ed.Contains(Path.Combine("bin", "release"), StringComparison.InvariantCultureIgnoreCase));
+
+            ed = CodeGenConsoleBase.GetBaseExeDirectory();
+            Assert.IsFalse(ed.Contains(Path.Combine("bin", "debug"), StringComparison.InvariantCultureIgnoreCase) || ed.Contains(Path.Combine("bin", "release"), StringComparison.InvariantCultureIgnoreCase));
+        }
+
         /// <summary>
         /// Execute command line directly.
         /// </summary>
