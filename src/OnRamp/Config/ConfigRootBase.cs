@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
 using Newtonsoft.Json;
+using OnRamp.Generators;
 using System;
 using System.Collections.Generic;
 
@@ -105,5 +106,10 @@ namespace OnRamp.Config
         /// </summary>
         /// <remarks>This provides a simple and consistent means to access this as a property value from a Handlebars template.</remarks>
         public Guid NewGuid => Guid.NewGuid();
+
+        /// <summary>
+        /// Gets the instance within an <see cref="IEnumerable{TRoot}"/> for a <see cref="CodeGeneratorBase{TRoot}.SelectGenConfig(TRoot)"/> result.
+        /// </summary>
+        public IEnumerable<TRoot> SelectGenResult => new TRoot[] { (TRoot)this };
     }
 }

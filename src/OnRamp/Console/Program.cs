@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using OnRamp.Console;
 using System.Threading.Tasks;
 
-namespace OnRamp
+namespace OnRamp.Console
 {
     /// <summary>
     /// Provides the direct console capabilities.

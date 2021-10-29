@@ -52,7 +52,7 @@ namespace OnRamp.Generators
                 throw new ArgumentNullException(nameof(config));
 
             var values = SelectGenConfig(config);
-            if (!values.Any())
+            if (values == null || !values.Any())
                 return;
 
             Handlebars.Configuration.TextEncoder = null;
