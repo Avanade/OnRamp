@@ -2,6 +2,7 @@
 using OnRamp.Test.Config;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OnRamp.Test
 {
@@ -86,6 +87,16 @@ namespace OnRamp.Test
         {
             var ec = new EntityConfig();
             Assert.AreNotEqual(ec.NewGuid, ec.NewGuid);
+        }
+
+        [Test]
+        public void SelectGenResult()
+        {
+            var ec = new EntityConfig();
+            var r = ec.SelectGenResult;
+            Assert.IsNotNull(r);
+            Assert.AreEqual(1, r.Count());
+            Assert.AreSame(ec, r.First());
         }
     }
 }

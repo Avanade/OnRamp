@@ -20,6 +20,7 @@ namespace OnRamp.Utility
         {
             HandlebarsHelpers.RegisterHelpers();
             Handlebars.Configuration.TextEncoder = null;
+            Handlebars.Configuration.FormatterProviders.Add(new HandlebarsUndefinedFormatter());
         }
 
         /// <summary>

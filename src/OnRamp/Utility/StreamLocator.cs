@@ -61,9 +61,10 @@ namespace OnRamp.Utility
 
                 if (assemblies != null)
                 {
+                    var frn = ConvertFileNameToResourceName(fileName);
                     foreach (var ass in new List<Assembly>(assemblies) { typeof(StreamLocator).Assembly })
                     {
-                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{fi.Name}", StringComparison.InvariantCulture)).FirstOrDefault();
+                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{frn}", StringComparison.InvariantCulture)).FirstOrDefault();
                         if (rn != null)
                         {
                             var ri = ass.GetManifestResourceInfo(rn);
@@ -119,15 +120,16 @@ namespace OnRamp.Utility
 
             if (!string.IsNullOrEmpty(contentType))
             {
-                fi = new FileInfo(Path.Combine(fi.DirectoryName, contentType, fi.Name));
+                fi = new FileInfo(Path.Combine(fi.DirectoryName, contentType, fileName));
                 if (fi.Exists)
                     return true;
 
                 if (assemblies != null)
                 {
+                    var frn = ConvertFileNameToResourceName(fileName);
                     foreach (var ass in new List<Assembly>(assemblies) { typeof(StreamLocator).Assembly })
                     {
-                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{fi.Name}", StringComparison.InvariantCulture)).FirstOrDefault();
+                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{frn}", StringComparison.InvariantCulture)).FirstOrDefault();
                         if (rn != null)
                             return true;
                     }
@@ -136,6 +138,11 @@ namespace OnRamp.Utility
 
             return false;
         }
+
+        /// <summary>
+        /// Replaces path characters to dot as per resource file notation.
+        /// </summary>
+        private static string ConvertFileNameToResourceName(string filename) => filename.Replace('/', '.').Replace('\\', '.');
 
         /// <summary>
         /// Gets (determines) the <see cref="StreamContentType"/> from the <paramref name="fileName"/> extension.

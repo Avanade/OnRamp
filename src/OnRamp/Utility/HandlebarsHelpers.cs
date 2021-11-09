@@ -2,7 +2,6 @@
 
 using HandlebarsDotNet;
 using Microsoft.Extensions.Logging;
-using OnRamp.Config;
 using OnRamp.Console;
 using System.Collections;
 using System.Globalization;
@@ -33,81 +32,81 @@ namespace OnRamp.Utility
             _areRegistered = true;
 
             // Will check that the first argument equals at least one of the subsequent arguments.
-            Handlebars.RegisterHelper("ifeq", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifeq", (writer, options, context, args) =>
             {
-                if (IfEq(args))
-                    context.Template(writer, parameters);
+                if (IfEq(ValidateArgs(options.Name.Path, args)))
+                    options.Template(writer, context);
                 else
-                    context.Inverse(writer, parameters);
+                    options.Inverse(writer, context);
             });
 
             // Will check that the first argument does not equal any of the subsequent arguments.
-            Handlebars.RegisterHelper("ifne", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifne", (writer, options, context, args) =>
             {
-                if (IfEq(args))
-                    context.Inverse(writer, parameters);
+                if (IfEq(ValidateArgs(options.Name.Path, args)))
+                    options.Inverse(writer, context);
                 else
-                    context.Template(writer, parameters);
+                    options.Template(writer, context);
             });
 
             // Will check that the first argument is less than or equal to the subsequent arguments.
-            Handlebars.RegisterHelper("ifle", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifle", (writer, options, context, args) =>
             {
-                if (IfLe(args))
-                    context.Template(writer, parameters);
+                if (IfLe(ValidateArgs(options.Name.Path, args)))
+                    options.Template(writer, context);
                 else
-                    context.Inverse(writer, parameters);
+                    options.Inverse(writer, context);
             });
 
             // Will check that the first argument is greater than or equal to the subsequent arguments.
-            Handlebars.RegisterHelper("ifge", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifge", (writer, options, context, args) =>
             {
-                if (IfGe(args))
-                    context.Template(writer, parameters);
+                if (IfGe(ValidateArgs(options.Name.Path, args)))
+                    options.Template(writer, context);
                 else
-                    context.Inverse(writer, parameters);
+                    options.Inverse(writer, context);
             });
 
             // Will check that all of the arguments have a non-<c>null</c> value.
-            Handlebars.RegisterHelper("ifval", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifval", (writer, options, context, args) =>
             {
-                foreach (var arg in args)
+                foreach (var arg in ValidateArgs(options.Name.Path, args))
                 {
                     if (arg == null)
                     {
-                        context.Inverse(writer, parameters);
+                        options.Inverse(writer, context);
                         return;
                     }
                 }
 
-                context.Template(writer, parameters);
+                options.Template(writer, context);
             });
 
             // Will check that all of the arguments have a <c>null</c> value.
-            Handlebars.RegisterHelper("ifnull", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifnull", (writer, options, context, args) =>
             {
-                foreach (var arg in args)
+                foreach (var arg in ValidateArgs(options.Name.Path, args))
                 {
                     if (arg != null)
                     {
-                        context.Inverse(writer, parameters);
+                        options.Inverse(writer, context);
                         return;
                     }
                 }
 
-                context.Template(writer, parameters);
+                options.Template(writer, context);
             });
 
             // Will check that any of the arguments have a <c>true</c> value where bool; otherwise, non-null value.
-            Handlebars.RegisterHelper("ifor", (writer, context, parameters, args) =>
+            Handlebars.RegisterHelper("ifor", (writer, options, context, args) =>
             {
-                foreach (var arg in args)
+                foreach (var arg in ValidateArgs(options.Name.Path, args))
                 {
                     if (arg is bool opt)
                     {
                         if (opt)
                         {
-                            context.Template(writer, parameters);
+                            options.Template(writer, context);
                             return;
                         }
                     }
@@ -117,88 +116,99 @@ namespace OnRamp.Utility
                         if (opt2 != null && !opt2.Value)
                             continue;
 
-                        context.Template(writer, parameters);
+                        options.Template(writer, context);
                         return;
                     }
                 }
 
-                context.Inverse(writer, parameters);
+                options.Inverse(writer, context);
             });
 
             // Formats and writes value.
-            Handlebars.RegisterHelper("format", (writer, context, parameters) => writer.WriteSafeString(FormatString(parameters)));
+            Handlebars.RegisterHelper("format", (writer, context, args) => writer.WriteSafeString(FormatString(ValidateArgs("format", args))));
 
             // Past-tense, pluralize and singularize.
-            Handlebars.RegisterHelper("past-tense", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPastTense(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("pluralize", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPlural(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("singularize", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSingle(parameters.FirstOrDefault()?.ToString()) ?? ""));
-
+            Handlebars.RegisterHelper("past-tense", (writer, context, args) => writer.WriteSafeString(StringConverter.ToPastTense(ValidateArgs("past-tense", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("pluralize", (writer, context, args) => writer.WriteSafeString(StringConverter.ToPlural(ValidateArgs("pluralize", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("singularize", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSingle(ValidateArgs("singularize", args).FirstOrDefault()?.ToString()) ?? ""));
 
             // Logs using the String.Format.
-            Handlebars.RegisterHelper("log-info", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogInformation(FormatString(parameters)));
-            Handlebars.RegisterHelper("log-warning", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogWarning(FormatString(parameters)));
-            Handlebars.RegisterHelper("log-error", (writer, context, parameters) => (Logger ?? new ConsoleLogger()).LogError(FormatString(parameters)));
-            Handlebars.RegisterHelper("log-debug", (writer, context, parameters) => System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(parameters)}"));
+            Handlebars.RegisterHelper("log-info", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogInformation(FormatString(ValidateArgs("log-info", args))));
+            Handlebars.RegisterHelper("log-warning", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogWarning(FormatString(ValidateArgs("log-warning", args))));
+            Handlebars.RegisterHelper("log-error", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogError(FormatString(ValidateArgs("log-error", args))));
+            Handlebars.RegisterHelper("log-debug", (writer, context, args) => System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(ValidateArgs("log-debug", args))}"));
 
             // Logs using the String.Format to the debugger and then initiates a break in the debugger itself.
-            Handlebars.RegisterHelper("debug", (writer, context, parameters) =>
+            Handlebars.RegisterHelper("debug", (writer, context, args) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(parameters)}");
+                System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(ValidateArgs("debug", args))}");
                 System.Diagnostics.Debugger.Break();
             });
 
             // Converts a value to lowercase or uppercase.
-            Handlebars.RegisterHelper("lower", (writer, context, parameters) => writer.WriteSafeString(parameters.FirstOrDefault()?.ToString()?.ToLowerInvariant() ?? ""));
-            Handlebars.RegisterHelper("upper", (writer, context, parameters) => writer.WriteSafeString(parameters.FirstOrDefault()?.ToString()?.ToUpperInvariant() ?? ""));
+            Handlebars.RegisterHelper("lower", (writer, context, args) => writer.WriteSafeString(ValidateArgs("lower", args).FirstOrDefault()?.ToString()?.ToLowerInvariant() ?? ""));
+            Handlebars.RegisterHelper("upper", (writer, context, args) => writer.WriteSafeString(ValidateArgs("upper", args).FirstOrDefault()?.ToString()?.ToUpperInvariant() ?? ""));
 
             // NOTE: Any ending in 'x' are to explicitly ignore special names!!!
 
             // Converts a value to camelcase.
-            Handlebars.RegisterHelper("camel", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToCamelCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("camelx", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToCamelCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("camel", (writer, context, args) => writer.WriteSafeString(StringConverter.ToCamelCase(ValidateArgs("camel", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("camelx", (writer, context, args) => writer.WriteSafeString(StringConverter.ToCamelCase(ValidateArgs("camelx", args).FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to pascalcase.
-            Handlebars.RegisterHelper("pascal", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPascalCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("pascalx", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPascalCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("pascal", (writer, context, args) => writer.WriteSafeString(StringConverter.ToPascalCase(ValidateArgs("pascal", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("pascalx", (writer, context, args) => writer.WriteSafeString(StringConverter.ToPascalCase(ValidateArgs("pascalx", args).FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to private case.
-            Handlebars.RegisterHelper("private", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPrivateCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("privatex", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToPrivateCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("private", (writer, context, args) => writer.WriteSafeString(StringConverter.ToPrivateCase(ValidateArgs("private", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("privatex", (writer, context, args) => writer.WriteSafeString(StringConverter.ToPrivateCase(ValidateArgs("privatex", args).FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to snake case.
-            Handlebars.RegisterHelper("snake", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSnakeCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("snakex", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSnakeCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("snake", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSnakeCase(ValidateArgs("snake", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("snakex", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSnakeCase(ValidateArgs("snakex", args).FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to kebab case.
-            Handlebars.RegisterHelper("kebab", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToKebabCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("kebabx", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToKebabCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("kebab", (writer, context, args) => writer.WriteSafeString(StringConverter.ToKebabCase(ValidateArgs("kebabx", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("kebabx", (writer, context, args) => writer.WriteSafeString(StringConverter.ToKebabCase(ValidateArgs("kebabx", args).FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to sentence case.
-            Handlebars.RegisterHelper("sentence", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSentenceCase(parameters.FirstOrDefault()?.ToString()) ?? ""));
-            Handlebars.RegisterHelper("sentencex", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSentenceCase(parameters.FirstOrDefault()?.ToString(), true) ?? ""));
+            Handlebars.RegisterHelper("sentence", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSentenceCase(ValidateArgs("sentence", args).FirstOrDefault()?.ToString()) ?? ""));
+            Handlebars.RegisterHelper("sentencex", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSentenceCase(ValidateArgs("sentencex", args).FirstOrDefault()?.ToString(), true) ?? ""));
 
             // Converts a value to the c# '<see cref="value"/>' comments equivalent.
-            Handlebars.RegisterHelper("see-comments", (writer, context, parameters) => writer.WriteSafeString(StringConverter.ToSeeComments(parameters.FirstOrDefault()?.ToString())));
+            Handlebars.RegisterHelper("see-comments", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSeeComments(ValidateArgs("see-comments", args).FirstOrDefault()?.ToString())));
 
             // Inserts indent spaces based on the passed count value.
-            Handlebars.RegisterHelper("indent", (writer, context, parameters) => writer.WriteSafeString(new string(' ', (int)(parameters.FirstOrDefault() ?? 0))));
+            Handlebars.RegisterHelper("indent", (writer, context, args) => writer.WriteSafeString(new string(' ', (int)(ValidateArgs("indent", args).FirstOrDefault() ?? 0))));
 
             // Adds a value to a value.
-            Handlebars.RegisterHelper("add", (writer, context, parameters) =>
+            Handlebars.RegisterHelper("add", (writer, context, args) =>
             {
                 int sum = 0;
-                foreach (var p in parameters)
+                foreach (var arg in ValidateArgs("add", args))
                 {
-                    if (p is int pi)
+                    if (arg is int pi)
                         sum += pi;
-                    else if (p is string ps)
-                        sum += int.Parse(ps, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                    else if (arg is string str)
+                        sum += int.Parse(str, NumberStyles.Integer, CultureInfo.InvariantCulture);
                     else
-                        writer.WriteSafeString("!!! add with invalid integer !!!");
+                        throw new CodeGenException($"Handlebars template invokes function 'add' that references value '{arg}' which is unable to be parsed as an integer.");
                 }
 
                 writer.WriteSafeString(sum);
             });
+        }
+
+        /// <summary>
+        /// Validate arguments and ensure none are undefined.
+        /// </summary>
+        private static Arguments ValidateArgs(string function, Arguments args)
+        {
+            var ua = args.OfType<UndefinedBindingResult>().FirstOrDefault();
+            if (ua == null)
+                return args;
+
+            throw new CodeGenException($"Handlebars template invokes function '{function}' that references '{ua.Value}' which is undefined.");
         }
 
         /// <summary>
