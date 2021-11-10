@@ -84,7 +84,15 @@ namespace OnRamp.Database
 
             if (string.IsNullOrEmpty(dbType))
                 return "string";
-            else if (TypeIsString(dbType))
+
+            if (dbType.EndsWith(')'))
+            {
+                var i = dbType.LastIndexOf('(');
+                if (i > 0)
+                    dbType = dbType[..i];
+            }
+
+            if (TypeIsString(dbType))
                 return "string";
             else if (TypeIsDecimal(dbType))
                 return "decimal";

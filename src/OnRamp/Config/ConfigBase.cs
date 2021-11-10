@@ -109,11 +109,14 @@ namespace OnRamp.Config
         /// <summary>
         /// Build the fully qualified name for the specified <paramref name="propertyName"/>.
         /// </summary>
-        /// <param name="propertyName"></param>
+        /// <param name="propertyName">The property name.</param>
         /// <returns>The fully qualified name.</returns>
-        public string? BuildFullyQualifiedName(string propertyName)
+        public string? BuildFullyQualifiedName(string? propertyName)
         {
-            var hier = new List<string?> { propertyName };
+            var hier = new List<string?>();
+            if (propertyName != null)
+                hier.Add(propertyName);
+
             ConfigBase? cb = this;
             while (true)
             {
