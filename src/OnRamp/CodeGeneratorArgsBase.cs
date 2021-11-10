@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Reflection;
 
@@ -90,6 +91,20 @@ namespace OnRamp
 
         /// <inheritdoc/>
         public bool HasOverriddenConnectionString { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the function to create the underlying <see cref="DbConnection"/>; this is used by <see cref="CreateConnection"/>.
+        /// </summary>
+        /// <remarks>The <see cref="string"/> input parameter value the <see cref="ConnectionString"/>.
+        /// <para>By leveraging the common <see cref="DbConnection"/> this allows the consumer to determine the specific relational database provider; from an <i>OnRamp</i> perspective the <see cref="Database"/> capabilities are provider agnostic.</para></remarks>
+        public Func<string, DbConnection>? DbConnectionCreator { get; set; }
+
+        /// <summary>
+        /// Creates the <see cref="DbConnection"/> using the corresponding <see cref="ConnectionString"/> value.
+        /// </summary>
+        /// <returns>The <see cref="DbConnection"/>.</returns>
+        public DbConnection CreateConnection() => (DbConnectionCreator ?? throw new InvalidOperationException($"{nameof(DbConnectionCreator)} function has not been configured."))
+            .Invoke(ConnectionString ?? throw new InvalidOperationException($"{nameof(ConnectionString)} has not been configured."));
 
         /// <inheritdoc/>
         void ICodeGeneratorArgs.CopyFrom(ICodeGeneratorArgs args) => CopyFrom((CodeGeneratorArgsBase)args);

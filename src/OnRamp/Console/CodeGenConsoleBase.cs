@@ -18,7 +18,8 @@ namespace OnRamp.Console
     /// </summary>
     /// <remarks>The standard console command-line arguments/options can be controlled via the constructor using the <see cref="SupportedOptions"/> flags. Additional capabilities can be added by inherting and overridding the
     /// <see cref="OnBeforeExecute(CommandLineApplication)"/>, <see cref="OnValidation(ValidationContext)"/> and <see cref="OnCodeGeneration"/>. Changes to the console output can be achieved by overridding
-    /// <see cref="OnWriteMasthead"/>, <see cref="OnWriteHeader"/>, <see cref="OnWriteArgs(ICodeGeneratorArgs)"/> and <see cref="OnWriteFooter(CodeGenStatistics)"/>.</remarks>
+    /// <see cref="OnWriteMasthead"/>, <see cref="OnWriteHeader"/>, <see cref="OnWriteArgs(ICodeGeneratorArgs)"/> and <see cref="OnWriteFooter(CodeGenStatistics)"/>.
+    /// <para>The underlying command line parsing is provided by <see href="https://natemcmaster.github.io/CommandLineUtils/"/>.</para></remarks>
     public abstract class CodeGenConsoleBase
     {
         private readonly SupportedOptions _supportedOptions;
