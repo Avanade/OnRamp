@@ -41,6 +41,6 @@ namespace OnRamp
         /// <param name="config">The <see cref="ConfigBase"/> that the excpetion is related to.</param>
         /// <param name="propertyName">The corresponding property name that is in error.</param>
         /// <param name="message">The message that describes the error.</param>
-        public CodeGenException(ConfigBase config, string propertyName, string message) : base($"[{(config ?? throw new ArgumentNullException(nameof(config))).BuildFullyQualifiedName(propertyName)}] {message}") { }
+        public CodeGenException(ConfigBase config, string? propertyName, string message) : base($"[{(config ?? throw new ArgumentNullException(nameof(config))).BuildFullyQualifiedName(propertyName)}] {message}") { }
     }
 }
