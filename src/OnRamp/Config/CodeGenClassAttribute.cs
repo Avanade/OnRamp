@@ -7,7 +7,7 @@ namespace OnRamp.Config
     /// <summary>
     /// Represents the <i>code-generation</i> class configuration.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public sealed class CodeGenClassAttribute : Attribute
     {
         /// <summary>

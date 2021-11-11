@@ -215,6 +215,7 @@ namespace OnRamp.Utility
                 Type t when t == typeof(string) => "string",
                 Type t when t == typeof(bool?) => "boolean",
                 Type t when t == typeof(int?) => "integer",
+                Type t when t == typeof(decimal?) => "number",
                 _ => throw new InvalidOperationException($"Type '{pi.DeclaringType?.Name}' Property '{pi.Name}' has a Type '{pi.PropertyType.Name}' that is not supported."),
             };
         }

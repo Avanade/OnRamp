@@ -297,8 +297,10 @@ namespace OnRamp.Utility
                 return rval;
             else if (type == typeof(bool))
                 return bool.Parse(rval.ToString()!);
-            else
+            else if (type == typeof(int))
                 return int.Parse(rval.ToString()!, CultureInfo.InvariantCulture);
+            else
+                return decimal.Parse(rval.ToString()!, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
