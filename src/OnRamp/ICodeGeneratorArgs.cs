@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using OnRamp.Config;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Reflection;
 
@@ -86,6 +87,19 @@ namespace OnRamp
         /// Indicates whether the <see cref="OverrideConnectionString"/> has been perfomed; can only be executed once.
         /// </summary>
         bool HasOverriddenConnectionString { get; }
+
+        /// <summary>
+        /// Gets or sets the function to create the underlying <see cref="DbConnection"/>; this is used by <see cref="CreateConnection"/>.
+        /// </summary>
+        /// <remarks>The <see cref="string"/> input parameter value the <see cref="ConnectionString"/>.
+        /// <para>By leveraging the common <see cref="DbConnection"/> this allows the consumer to determine the specific relational database provider; from an <i>OnRamp</i> perspective the <see cref="Database"/> capabilities are provider agnostic.</para></remarks>
+        Func<string, DbConnection>? DbConnectionCreator { get; set; }
+
+        /// <summary>
+        /// Creates the <see cref="DbConnection"/> using the corresponding <see cref="ConnectionString"/> value.
+        /// </summary>
+        /// <returns>The <see cref="DbConnection"/>.</returns>
+        DbConnection CreateConnection();
 
         /// <summary>
         /// Adds (inserts) one or more <paramref name="assemblies"/> to <see cref="Assemblies"/> (before any existing values).
