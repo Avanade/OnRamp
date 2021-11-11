@@ -261,6 +261,8 @@ Attribute | Description
 
 Any other YAML properties specified will be automatically passed in as runtime parameters (name/value pairs); see [`IRootConfig.RuntimeParameters`](./src/OnRamp/Config/IRootConfig.cs).
 
+<br/>
+
 #### Example
 
 An example of a Script YAML file is as follows:
@@ -403,7 +405,7 @@ Class | Description
 
 ## License
 
-_OnRamp_ is open source under the [MIT license](./LICENSE.md) and is free for commercial use.
+_OnRamp_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
 
 <br/>
 

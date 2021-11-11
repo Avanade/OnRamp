@@ -35,6 +35,20 @@ namespace OnRamp.Config
         public static string? DefaultWhereNull(string? value, Func<string?> defaultValue) => value ?? (defaultValue ?? throw new ArgumentNullException(nameof(defaultValue)))();
 
         /// <summary>
+        /// Defaults the <see cref="int"/> <paramref name="value"/> where <c>null</c> using the <paramref name="defaultValue"/> function.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="defaultValue">The default value function.</param>
+        public static int? DefaultWhereNull(int? value, Func<int?> defaultValue) => value ?? (defaultValue ?? throw new ArgumentNullException(nameof(defaultValue)))();
+
+        /// <summary>
+        /// Defaults the <see cref="decimal"/> <paramref name="value"/> where <c>null</c> using the <paramref name="defaultValue"/> function.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="defaultValue">The default value function.</param>
+        public static decimal? DefaultWhereNull(decimal? value, Func<decimal?> defaultValue) => value ?? (defaultValue ?? throw new ArgumentNullException(nameof(defaultValue)))();
+
+        /// <summary>
         /// Defaults the <see cref="bool"/> <paramref name="value"/> where <c>null</c> using the <paramref name="defaultValue"/> function.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -48,6 +62,22 @@ namespace OnRamp.Config
         /// <param name="compareTo">The value to compare to.</param>
         /// <returns><c>true</c> where equal or <paramref name="propertyValue"/> is <c>null</c>; otherwise, <c>false</c>.</returns>
         public static bool CompareNullOrValue(string? propertyValue, string compareTo) => propertyValue == null || propertyValue == compareTo;
+
+        /// <summary>
+        /// Compares the <see cref="int"/> <paramref name="propertyValue"/> and <paramref name="compareTo"/> for equality, or whether <paramref name="propertyValue"/> is <c>null</c>.
+        /// </summary>
+        /// <param name="propertyValue">The property value.</param>
+        /// <param name="compareTo">The value to compare to.</param>
+        /// <returns><c>true</c> where equal or <paramref name="propertyValue"/> is <c>null</c>; otherwise, <c>false</c>.</returns>
+        public static bool CompareNullOrValue(int? propertyValue, int compareTo) => propertyValue == null || propertyValue == compareTo;
+
+        /// <summary>
+        /// Compares the <see cref="decimal"/> <paramref name="propertyValue"/> and <paramref name="compareTo"/> for equality, or whether <paramref name="propertyValue"/> is <c>null</c>.
+        /// </summary>
+        /// <param name="propertyValue">The property value.</param>
+        /// <param name="compareTo">The value to compare to.</param>
+        /// <returns><c>true</c> where equal or <paramref name="propertyValue"/> is <c>null</c>; otherwise, <c>false</c>.</returns>
+        public static bool CompareNullOrValue(decimal? propertyValue, decimal compareTo) => propertyValue == null || propertyValue == compareTo;
 
         /// <summary>
         /// Compares the <see cref="bool"/> <paramref name="propertyValue"/> and <paramref name="compareTo"/> for equality, or whether <paramref name="propertyValue"/> is <c>null</c>.

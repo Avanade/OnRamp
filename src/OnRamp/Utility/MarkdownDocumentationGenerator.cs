@@ -127,7 +127,7 @@ namespace OnRamp.Utility
 
                 foreach (var cat in cats)
                 {
-                    tw.WriteLine($"[`{cat.Category}`](#{cat.Category}) | {cat.Title}");
+                    tw.WriteLine($"[`{cat.Category}`](#{cat.Category.Replace(".", "")}) | {cat.Title}");
                 }
 
                 tw.WriteLine();
