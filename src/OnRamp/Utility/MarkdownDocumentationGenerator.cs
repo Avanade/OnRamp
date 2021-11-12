@@ -17,12 +17,6 @@ namespace OnRamp.Utility
     public static class MarkdownDocumentationGenerator
     {
         /// <summary>
-        /// Gets or sets the <see cref="Action{T}"/> invoked on file creation (passed the file name).
-        /// </summary>
-        /// <remarks>This is provided to facilitate the likes of logging.</remarks>
-        public static Action<string>? OnFileCreation { get; set; }
-
-        /// <summary>
         /// Generates <c>Markdown</c> for each <see cref="Type"/> (recursively) from the specified root <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The root <see cref="Type"/> to derive the schema from.</typeparam>
@@ -30,14 +24,16 @@ namespace OnRamp.Utility
         /// <param name="directory">The directory in which to create the markdown files; defaults to <see cref="Environment.CurrentDirectory"/>.</param>
         /// <param name="includeExample">Indicates whether to include the <see cref="CodeGenClassAttribute.Markdown"/> in the file.</param>
         /// <param name="addBreaksBetweenSections">Indicates whether to include additional breaks (<c>&lt;br/&gt;</c>) between sections.</param>
+        /// <param name="tableTitleTextSplitHtml">The HTML that will be used to split the title and text content within the table output.</param>
         /// <param name="propertyData">The action to optionally enable manipulation of the <see cref="MarkdownDocumentationGeneratorPropertyData"/> before being written to the file.</param>
-        public static void Generate<T>(Func<Type, CodeGenClassAttribute, string>? createFileName = null, string? directory = null, bool includeExample = true, bool addBreaksBetweenSections = false, Action<MarkdownDocumentationGeneratorPropertyData>? propertyData = null) where T : ConfigBase, IRootConfig =>
-            WriteObject(typeof(T), createFileName ?? ((_, csa) => $"{csa.Name}.md"), directory ?? Environment.CurrentDirectory, includeExample, addBreaksBetweenSections, propertyData);
+        /// <param name="fileCreation">The action to optionally perform other work, such as loggig, on file create.</param>
+        public static void Generate<T>(Func<Type, CodeGenClassAttribute, string>? createFileName = null, string? directory = null, bool includeExample = true, bool addBreaksBetweenSections = false, string? tableTitleTextSplitHtml = "<br/>&dagger; ", Action<MarkdownDocumentationGeneratorPropertyData>? propertyData = null, Action<string>? fileCreation = null) where T : ConfigBase, IRootConfig =>
+            WriteObject(typeof(T), createFileName ?? ((_, csa) => $"{csa.Name}.md"), directory ?? Environment.CurrentDirectory, includeExample, addBreaksBetweenSections, tableTitleTextSplitHtml, propertyData, fileCreation);
 
         /// <summary>
         /// Writes the markdown for the object.
         /// </summary>
-        private static void WriteObject(Type type, Func<Type, CodeGenClassAttribute, string> createFileName, string directory, bool includeExample, bool addBreaksBetweenSections, Action<MarkdownDocumentationGeneratorPropertyData>? propertyData)
+        private static void WriteObject(Type type, Func<Type, CodeGenClassAttribute, string> createFileName, string directory, bool includeExample, bool addBreaksBetweenSections, string? tableTitleTextSplitHtml, Action<MarkdownDocumentationGeneratorPropertyData>? propertyData, Action<string>? fileCreation)
         {
             // Where the type does not have ClassSchemaAttribute then continue.
             var csa = type.GetCustomAttribute<CodeGenClassAttribute>();
@@ -46,7 +42,7 @@ namespace OnRamp.Utility
 
             // Get file name and create.
             var fn = createFileName(type, csa) ?? throw new InvalidOperationException("The createFileName function must not return a null.");
-            OnFileCreation?.Invoke(fn);
+            fileCreation?.Invoke(fn);
             using var tw = File.CreateText(new FileInfo(Path.Combine(directory, fn)).FullName);
 
             // Get all the properties prior to write.
@@ -165,7 +161,7 @@ namespace OnRamp.Utility
                 foreach (var p in pdlist.Where(x => x.Category == cat.Category))
                 {
                     if (p.Psa != null)
-                        WriteTableItem(tw, p.Name, p.Psa.Title, p.Psa.Description, null, p.Psa.IsMandatory, p.Psa.IsImportant, p.Psa.Options);
+                        WriteTableItem(tw, p.Name, p.Psa.Title, p.Psa.Description, null, p.Psa.IsMandatory, p.Psa.IsImportant, tableTitleTextSplitHtml, p.Psa.Options);
                     else
                     {
                         var pt = JsonSchemaGenerator.GetItemType(p.Property!.PropertyType);
@@ -173,10 +169,10 @@ namespace OnRamp.Utility
                         if (ptcsa != null)
                         {
                             var ptfn = createFileName(pt, ptcsa) ?? throw new InvalidOperationException("The createFileName function must not return a null.");
-                            WriteTableItem(tw, p.Name, $"The corresponding [`{ptcsa.Name}`]({ptfn}) collection.", p.Pcsa!.Description, p.Pcsa.Markdown, p.Pcsa.IsMandatory, p.Pcsa.IsImportant);
+                            WriteTableItem(tw, p.Name, $"The corresponding [`{ptcsa.Name}`]({ptfn}) collection.", p.Pcsa!.Description, p.Pcsa.Markdown, p.Pcsa.IsMandatory, p.Pcsa.IsImportant, tableTitleTextSplitHtml);
                         }
                         else if (p.Pcsa != null)
-                            WriteTableItem(tw, p.Name, p.Pcsa.Title, p.Pcsa.Description, p.Pcsa.Markdown, p.Pcsa.IsMandatory, p.Pcsa.IsImportant);
+                            WriteTableItem(tw, p.Name, p.Pcsa.Title, p.Pcsa.Description, p.Pcsa.Markdown, p.Pcsa.IsMandatory, p.Pcsa.IsImportant, tableTitleTextSplitHtml);
                     }
                 }
 
@@ -194,14 +190,14 @@ namespace OnRamp.Utility
             // Create markdown for each child collection type.
             foreach (var p in pdlist.Where(x => x.Pcsa != null))
             {
-                WriteObject(JsonSchemaGenerator.GetItemType(p.Property!.PropertyType), createFileName, directory, includeExample, addBreaksBetweenSections, propertyData);
+                WriteObject(JsonSchemaGenerator.GetItemType(p.Property!.PropertyType), createFileName, directory, includeExample, addBreaksBetweenSections, tableTitleTextSplitHtml, propertyData, fileCreation);
             }
         }
 
         /// <summary>
         /// Write the table line.
         /// </summary>
-        private static void WriteTableItem(TextWriter tw, string? name, string? title, string? description = null, string? markdown = null, bool isMandatory = false, bool isImportant = false, string[]? options = null)
+        private static void WriteTableItem(TextWriter tw, string? name, string? title, string? description = null, string? markdown = null, bool isMandatory = false, bool isImportant = false, string? tableTitleTextSplitHtml = null, string[]? options = null)
         {
             if (isMandatory || isImportant)
                 tw.Write("**");
@@ -234,7 +230,7 @@ namespace OnRamp.Utility
                 tw.Write(" [Mandatory]");
             
             if (description != null)
-                tw.Write($"<br/><br/>{description}");
+                tw.Write($"{tableTitleTextSplitHtml ?? " "}{description}");
 
             if (markdown != null)
                 tw.Write($"<br/><br/>{markdown}");
