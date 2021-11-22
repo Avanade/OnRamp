@@ -17,14 +17,14 @@
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>strong-name-key.snk</AssemblyOriginatorKeyFile>
-    <PackageIconUrl>https://github.com/Avanade/OnRamp/raw/master/docs/images/Logo256x256.png</PackageIconUrl>
+    <PackageIconUrl>https://github.com/Avanade/OnRamp/raw/main/images/Logo256x256.png</PackageIconUrl>
     <PackageIcon>Logo256x256.png</PackageIcon>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Title>OnRamp Code Generator.</Title>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <PackageTags>onramp on-ramp code-generation codegen code-gen handlebars handlebase.js</PackageTags>
+    <PackageTags>onramp on-ramp code-generation codegen code-gen handlebars handlebars.js</PackageTags>
     <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
     <Nullable>enable</Nullable>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
