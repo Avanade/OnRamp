@@ -13,7 +13,7 @@ namespace OnRamp.Utility
     /// <summary>
     /// Represents a <c>JsonSchema</c> <see cref="Generate{T}(TextWriter, string?)">generator</see>.
     /// </summary>
-    /// <remarks>See <see href="https://json-schema.org/"/> and  <see href="https://www.schemastore.org/json/"/>.</remarks>
+    /// <remarks>See <see href="https://json-schema.org/"/> and <see href="https://www.schemastore.org/json/"/>.</remarks>
     public static class JsonSchemaGenerator
     {
         /// <summary>
