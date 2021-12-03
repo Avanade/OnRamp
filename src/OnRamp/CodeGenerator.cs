@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OnRamp
 {
@@ -18,22 +19,26 @@ namespace OnRamp
     public class CodeGenerator
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CodeGenerator"/> class.
+        /// Create a new instance of the <see cref="CodeGenerator"/> class.
         /// </summary>
         /// <param name="args">The <see cref="ICodeGeneratorArgs"/>.</param>
-        public CodeGenerator(ICodeGeneratorArgs args)
-        {
-            CodeGenArgs = args ?? throw new ArgumentNullException(nameof(args));
-            CodeGenArgs.OutputDirectory ??= new DirectoryInfo(Environment.CurrentDirectory);
+        /// <returns>The <see cref="CodeGenerator"/>.</returns>
+        public static async Task<CodeGenerator> CreateAsync(ICodeGeneratorArgs args)
+            => new CodeGenerator(args, await LoadScriptsAsync(args));
 
-            using var s = StreamLocator.GetScriptStreamReader(CodeGenArgs.ScriptFileName ?? throw new CodeGenException("Script file name must be specified."), CodeGenArgs.Assemblies.ToArray()) ?? throw new CodeGenException($"Script '{CodeGenArgs.ScriptFileName}' does not exist.");
-            Scripts = LoadScriptStream(null, CodeGenArgs.ScriptFileName, s);
+        /// <summary>
+        /// Load the Scripts.
+        /// </summary>
+        private static async Task<CodeGenScript> LoadScriptsAsync(ICodeGeneratorArgs args)
+        {
+            using var s = StreamLocator.GetScriptStreamReader(args.ScriptFileName ?? throw new CodeGenException("Script file name must be specified."), args.Assemblies.ToArray()) ?? throw new CodeGenException($"Script '{args.ScriptFileName}' does not exist.");
+            return await LoadScriptStreamAsync(args, null, args.ScriptFileName, s).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Load/parse the script configuration from the stream.
         /// </summary>
-        private CodeGenScript LoadScriptStream(CodeGenScript? rootScript, string scriptFileName, TextReader scriptReader)
+        private static async Task<CodeGenScript> LoadScriptStreamAsync(ICodeGeneratorArgs args, CodeGenScript? rootScript, string scriptFileName, TextReader scriptReader)
         {
             try
             {
@@ -52,9 +57,9 @@ namespace OnRamp
                 catch (Exception ex) { throw new CodeGenException(ex.Message); }
 
                 // Merge in the parameters and prepare/validate.
-                scripts.SetCodeGenArgs(CodeGenArgs);
-                scripts.MergeRuntimeParameters(CodeGenArgs.Parameters);
-                scripts.Prepare(scripts, scripts);
+                scripts.SetCodeGenArgs(args);
+                scripts.MergeRuntimeParameters(args.Parameters);
+                await scripts.PrepareAsync(scripts, scripts).ConfigureAwait(false);
                 rootScript ??= scripts;
 
                 // Recursively inherit (include/merge) additional scripts files.
@@ -66,8 +71,8 @@ namespace OnRamp
                 {
                     foreach (var ifn in scripts.Inherits)
                     {
-                        using var s = StreamLocator.GetScriptStreamReader(ifn, CodeGenArgs.Assemblies.ToArray()) ?? throw new CodeGenException($"Script '{ifn}' does not exist.");
-                        var inherit = LoadScriptStream(rootScript, ifn, s);
+                        using var s = StreamLocator.GetScriptStreamReader(ifn, args.Assemblies.ToArray()) ?? throw new CodeGenException($"Script '{ifn}' does not exist.");
+                        var inherit = await LoadScriptStreamAsync(args, rootScript, ifn, s).ConfigureAwait(false);
                         foreach (var iscript in inherit.Generators!)
                         {
                             iscript.Root = rootScript.Root;
@@ -90,6 +95,16 @@ namespace OnRamp
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CodeGenerator"/> class.
+        /// </summary>
+        private CodeGenerator(ICodeGeneratorArgs args, CodeGenScript scripts)
+        {
+            CodeGenArgs = args ?? throw new ArgumentNullException(nameof(args));
+            CodeGenArgs.OutputDirectory ??= new DirectoryInfo(Environment.CurrentDirectory);
+            Scripts = scripts;
+        }
+
+        /// <summary>
         /// Gets the <see cref="CodeGenScript"/>.
         /// </summary>
         public CodeGenScript Scripts { get; }
@@ -106,11 +121,11 @@ namespace OnRamp
         /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
         /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
         /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
-        public CodeGenStatistics Generate(string? configFileName = null)
+        public async Task<CodeGenStatistics> GenerateAsync(string? configFileName = null)
         {
             var fn = configFileName ?? CodeGenArgs.ConfigFileName ?? throw new CodeGenException("Config file must be specified.");
             using var sr = StreamLocator.GetStreamReader(fn, null, CodeGenArgs.Assemblies.ToArray()) ?? throw new CodeGenException($"Config '{fn}' does not exist.");
-            return Generate(fn, sr, StreamLocator.GetContentType(fn));
+            return await GenerateAsync(fn, sr, StreamLocator.GetContentType(fn)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -122,12 +137,12 @@ namespace OnRamp
         /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
         /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
         /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
-        public CodeGenStatistics Generate(TextReader configReader, StreamContentType contentType, string configFileName = "<stream>") => Generate(configFileName, configReader, contentType);
+        public async Task<CodeGenStatistics> GenerateAsync(TextReader configReader, StreamContentType contentType, string configFileName = "<stream>") => await GenerateAsync(configFileName, configReader, contentType).ConfigureAwait(false);
 
         /// <summary>
         /// Executes the code-generation.
         /// </summary>
-        private CodeGenStatistics Generate(string configFileName, TextReader configReader, StreamContentType contentType)
+        private async Task<CodeGenStatistics> GenerateAsync(string configFileName, TextReader configReader, StreamContentType contentType)
         {
             ConfigBase? config;
             IRootConfig rootConfig;
@@ -157,15 +172,15 @@ namespace OnRamp
                 {
                     var ce = (IConfigEditor)(Activator.CreateInstance(cet) ?? throw new CodeGenException($"Config Editor {cet.FullName} could not be instantiated."));
                     editors.Add(ce);
-                    ce.BeforePrepare(rootConfig);
+                    await ce.BeforePrepareAsync(rootConfig).ConfigureAwait(false);
                 }
 
-                config!.Prepare(config!, config!);
+                await config!.PrepareAsync(config!, config!).ConfigureAwait(false);
 
                 // Execute any 'after' custom editors (in reverse order).
                 foreach (var ce in ((IEnumerable<IConfigEditor>)editors).Reverse())
                 {
-                    ce.AfterPrepare(rootConfig);
+                    await ce.AfterPrepareAsync(rootConfig).ConfigureAwait(false);
                 }
             }
             catch (CodeGenException cgex)
@@ -224,11 +239,26 @@ namespace OnRamp
                 di.Create();
 
             var fi = new FileInfo(Path.Combine(di.FullName, outputArgs.FileName));
+
+            // Check if exists and can be overridden.
+            if (outputArgs.Script.IsGenOnce)
+            {
+                if (string.IsNullOrEmpty(outputArgs.Script.GenOncePattern))
+                {
+                    if (fi.Exists)
+                        return;
+                }
+                else
+                {
+                    // Perform a wildcard search and stop code-gen where any matches.
+                    if (di.GetFiles(outputArgs.GenOncePattern).Any())
+                        return;
+                }
+            }
+
+            // Create or override.
             if (fi.Exists)
             {
-                if (outputArgs.Script.IsGenOnce)
-                    return;
-
                 var prevContent = File.ReadAllText(fi.FullName);
                 if (string.Compare(outputArgs.Content, prevContent, StringComparison.InvariantCulture) == 0)
                     statistics.NotChangedCount++;

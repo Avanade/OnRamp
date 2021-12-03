@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using OnRamp.Config;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.IO;
 using System.Reflection;
 
@@ -13,8 +12,7 @@ namespace OnRamp
     /// <summary>
     /// Defines the <see cref="CodeGenerator"/> arguments.
     /// </summary>
-    /// <remarks>Note that the <see cref="ConnectionString"/> treatment is managed by <see cref="OverrideConnectionString(string?)"/>.</remarks>
-    public interface ICodeGeneratorArgs
+    public interface ICodeGeneratorArgs : ICodeGeneratorDbArgs
     {
         /// <summary>
         /// Gets or sets the <b>Script</b> file name to load the content from the <c>Scripts</c> folder within the file system (primary) or <see cref="Assemblies"/> (secondary, recursive until found).
@@ -39,7 +37,7 @@ namespace OnRamp
         /// <summary>
         /// Gets the dictionary of <see cref="IRootConfig.RuntimeParameters"/> name/value pairs.
         /// </summary>
-        Dictionary<string, string?> Parameters { get; }
+        Dictionary<string, object?> Parameters { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="ILogger"/> to optionally log the underlying code-generation.
@@ -47,7 +45,7 @@ namespace OnRamp
         ILogger? Logger { get; set; }
 
         /// <summary>
-        /// Indicates whether the <see cref="CodeGenerator.Generate(string)"/> is expecting to generate <i>no</i> changes; e.g. within in a build pipeline.
+        /// Indicates whether the <see cref="CodeGenerator.GenerateAsync(string)"/> is expecting to generate <i>no</i> changes; e.g. within in a build pipeline.
         /// </summary>
         /// <remarks>Where changes are found then a <see cref="CodeGenChangesFoundException"/> will be thrown.</remarks>
         bool ExpectNoChanges { get; set; }
@@ -56,50 +54,6 @@ namespace OnRamp
         /// Indicates whether the code-generation is a simulation; i.e. does not update the artefacts.
         /// </summary>
         bool IsSimulation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the database connection string.
-        /// </summary>
-        /// <remarks>See <see cref="OverrideConnectionString"/> for how used internally.</remarks>
-        string? ConnectionString { get; set; }
-
-        /// <summary>
-        /// Gets or sets the environment variable name to get the connection string.
-        /// </summary>
-        /// <remarks>See <see cref="OverrideConnectionString"/> for how used internally.</remarks>
-        string? ConnectionStringEnvironmentVariableName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the function to determine the <see cref="ConnectionStringEnvironmentVariableName"/> at runtime.
-        /// </summary>
-        /// <remarks>See <see cref="OverrideConnectionString"/> for how used internally.</remarks>
-        Func<ICodeGeneratorArgs, string?>? CreateConnectionStringEnvironmentVariableName { get; set; }
-
-        /// <summary>
-        /// Overrides the <see cref="ConnectionString"/> based on following order of precedence: <paramref name="overrideConnectionString"/>, from the <see cref="ConnectionStringEnvironmentVariableName"/>,
-        /// from the <see cref="CreateConnectionStringEnvironmentVariableName"/>, then existing <see cref="ConnectionString"/>.
-        /// </summary>
-        /// <param name="overrideConnectionString">The connection string override.</param>
-        /// <remarks>This will only override on first invocation; subsequent invocations will have no effect.</remarks>
-        void OverrideConnectionString(string? overrideConnectionString = null);
-
-        /// <summary>
-        /// Indicates whether the <see cref="OverrideConnectionString"/> has been perfomed; can only be executed once.
-        /// </summary>
-        bool HasOverriddenConnectionString { get; }
-
-        /// <summary>
-        /// Gets or sets the function to create the underlying <see cref="DbConnection"/>; this is used by <see cref="CreateConnection"/>.
-        /// </summary>
-        /// <remarks>The <see cref="string"/> input parameter value the <see cref="ConnectionString"/>.
-        /// <para>By leveraging the common <see cref="DbConnection"/> this allows the consumer to determine the specific relational database provider; from an <i>OnRamp</i> perspective the <see cref="Database"/> capabilities are provider agnostic.</para></remarks>
-        Func<string, DbConnection>? DbConnectionCreator { get; set; }
-
-        /// <summary>
-        /// Creates the <see cref="DbConnection"/> using the corresponding <see cref="ConnectionString"/> value.
-        /// </summary>
-        /// <returns>The <see cref="DbConnection"/>.</returns>
-        DbConnection CreateConnection();
 
         /// <summary>
         /// Adds (inserts) one or more <paramref name="assemblies"/> to <see cref="Assemblies"/> (before any existing values).
@@ -113,7 +67,7 @@ namespace OnRamp
         /// </summary>
         /// <param name="key">The parameter name.</param>
         /// <param name="value">The parameter value.</param>
-        void AddParameter(string key, string? value)
+        void AddParameter(string key, object? value)
         {
             if (!Parameters.TryAdd(key, value))
                 Parameters[key] = value;
@@ -123,7 +77,7 @@ namespace OnRamp
         /// Adds (merges) the <paramref name="parameters"/> to the <see cref="Parameters"/>.
         /// </summary>
         /// <param name="parameters">The parameters.</param>
-        void AddParameters(IDictionary<string, string?> parameters)
+        void AddParameters(IDictionary<string, object?> parameters)
         {
             if (parameters != null)
             {
@@ -137,11 +91,12 @@ namespace OnRamp
         /// <summary>
         /// Gets the specified parameter from the <see cref="Parameters"/> collection.
         /// </summary>
+        /// <typeparam name="T">The parameter value <see cref="Type"/>.</typeparam>
         /// <param name="key">The key.</param>
         /// <param name="throwWhereNotFound">Indicates to throw a <see cref="CodeGenException"/> when the specified key is not found.</param>
         /// <returns>The parameter value where found; otherwise, <c>null</c>.</returns>
         /// <exception cref="CodeGenException">The <see cref="CodeGenException"/>.</exception>
-        string? GetParameter(string key, bool throwWhereNotFound = false);
+        T? GetParameter<T>(string key, bool throwWhereNotFound = false);
 
         /// <summary>
         /// Copy and replace from <paramref name="args"/>.

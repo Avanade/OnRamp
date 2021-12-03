@@ -64,7 +64,7 @@ namespace OnRamp.Utility
                     var frn = ConvertFileNameToResourceName(fileName);
                     foreach (var ass in new List<Assembly>(assemblies) { typeof(StreamLocator).Assembly })
                     {
-                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{frn}", StringComparison.InvariantCulture)).FirstOrDefault();
+                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{frn}", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                         if (rn != null)
                         {
                             var ri = ass.GetManifestResourceInfo(rn);
@@ -129,7 +129,7 @@ namespace OnRamp.Utility
                     var frn = ConvertFileNameToResourceName(fileName);
                     foreach (var ass in new List<Assembly>(assemblies) { typeof(StreamLocator).Assembly })
                     {
-                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{frn}", StringComparison.InvariantCulture)).FirstOrDefault();
+                        var rn = ass.GetManifestResourceNames().Where(x => x.EndsWith($".{contentType}.{frn}", StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                         if (rn != null)
                             return true;
                     }

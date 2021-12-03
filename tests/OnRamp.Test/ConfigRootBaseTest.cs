@@ -43,7 +43,7 @@ namespace OnRamp.Test
         [Test]
         public void MergeRuntimeParameters()
         {
-            var rp = new Dictionary<string, string>
+            var rp = new Dictionary<string, object>
             {
                 { "XXX", "456" },
                 { "YYY", "789" }

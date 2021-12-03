@@ -60,7 +60,7 @@ namespace OnRamp
         /// </summary>
         /// <param name="parameters">The parameters.</param>
         /// <returns>The current <see cref="CodeGeneratorArgs"/> instance to support fluent-style method-chaining.</returns>
-        public CodeGeneratorArgs AddParameters(IDictionary<string, string?> parameters)
+        public CodeGeneratorArgs AddParameters(IDictionary<string, object?> parameters)
         {
             ((ICodeGeneratorArgs)this).AddParameters(parameters);
             return this;

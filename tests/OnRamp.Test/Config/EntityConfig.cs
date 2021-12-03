@@ -1,6 +1,7 @@
 ﻿using OnRamp.Config;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -20,9 +21,9 @@ namespace OnRamp.Test.Config
         [CodeGenPropertyCollection("Collection", Title = "The `Property` collection.", IsImportant = true)]
         public List<PropertyConfig>? Properties { get; set; }
 
-        protected override void Prepare()
+        protected override async Task PrepareAsync()
         {
-            Properties = PrepareCollection(Properties);
+            Properties = await PrepareCollectionAsync(Properties).ConfigureAwait(false);
         }
     }
 }

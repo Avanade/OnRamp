@@ -257,6 +257,7 @@ Attribute | Description
 `file` | The name of the file (artefact) that will be generated; this also supports _Handlebars_ syntax to enable runtime computation.
 `directory` | This is the sub-directory (path) where the file (artefact) will be generated; this also supports _Handlebars_ syntax to enable runtime computation.
 `genOnce` | This boolean (`true`/`false`) indicates whether the file is to be only generated once; i.e. only created where it does not already exist (optional).
+`genOncePattern` | The file name pattern to search, including wildcards, to validate if the file (artefact) already exists (where `genOnce` is `true`). This is optional and where not specified will default to `file`. This is useful in scenarios where the file name is not fixed; for example, contains date and time. 
 `text` | The text written to the log / console to enable additional context (optional).
 
 Any other YAML properties specified will be automatically passed in as runtime parameters (name/value pairs); see [`IRootConfig.RuntimeParameters`](./src/OnRamp/Config/IRootConfig.cs).
