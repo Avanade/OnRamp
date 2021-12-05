@@ -5,6 +5,7 @@ using OnRamp.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace OnRamp
@@ -60,10 +61,17 @@ namespace OnRamp
         /// </summary>
         /// <param name="assemblies">The assemblies to add.</param>
         /// <remarks>The order in which they are specified is the order in which they will be probed for embedded resources.</remarks>
-        void AddAssembly(params Assembly[] assemblies) => Assemblies.InsertRange(0, assemblies);
+        void AddAssembly(params Assembly[] assemblies)
+        {
+            foreach (var a in assemblies.Reverse())
+            {
+                if (!Assemblies.Contains(a))
+                    Assemblies.Insert(0, a);
+            }
+        }
 
         /// <summary>
-        /// Adds (merges) the parameter to the <see cref="Parameters"/>.
+        /// Adds (updates) the parameter to the <see cref="Parameters"/>.
         /// </summary>
         /// <param name="key">The parameter name.</param>
         /// <param name="value">The parameter value.</param>

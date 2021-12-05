@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
 using System;
-using System.Data.Common;
 
 namespace OnRamp
 {

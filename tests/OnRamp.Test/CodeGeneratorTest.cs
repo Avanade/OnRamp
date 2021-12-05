@@ -93,7 +93,9 @@ namespace OnRamp.Test
             Assert.NotNull(cg);
             Assert.NotNull(cg.Scripts?.Generators);
             Assert.AreEqual(1, cg.Scripts.Generators.Count);
-            Assert.AreEqual(2, cg.Scripts.Generators[0].RuntimeParameters.Count);
+            Assert.AreEqual(3, cg.Scripts.Generators[0].RuntimeParameters.Count);
+            Assert.IsTrue(cg.Scripts.Generators[0].RuntimeParameters.ContainsKey("IsGenOnce"));
+            Assert.AreEqual(false, cg.Scripts.Generators[0].RuntimeParameters["IsGenOnce"]);
             Assert.IsTrue(cg.Scripts.Generators[0].RuntimeParameters.ContainsKey("Company"));
             Assert.AreEqual("Xxx", cg.Scripts.Generators[0].RuntimeParameters["Company"]);
             Assert.IsTrue(cg.Scripts.Generators[0].RuntimeParameters.ContainsKey("AppName"));
