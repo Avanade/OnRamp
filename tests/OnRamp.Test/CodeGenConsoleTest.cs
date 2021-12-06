@@ -248,8 +248,8 @@ namespace OnRamp.Test
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-            process.StartInfo.FileName = "./OnRamp";
-            process.StartInfo.Arguments = args;
+            process.StartInfo.FileName = "dotnet";
+            process.StartInfo.Arguments = $"OnRamp.dll {args}";
             process.Start();
 
             var reader = process.StandardOutput;
