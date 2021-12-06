@@ -239,12 +239,11 @@ namespace OnRamp.Test
         /// </summary>
         private (int exitCode, string stdOut, string stdErr) ExecuteCommandLine(string args)
         {
-            //if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            //    Assert.Inconclusive("This test is *only* supported on the Windows platform; otherwise, the Process.Start results in the following error: A fatal error was encountered. The library 'libhostpolicy.so' required to execute the application was not found in '/home/runner/.dotnet'.");
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Assert.Inconclusive("This test is *only* supported on the Windows platform; otherwise, the Process.Start results in the following error: A fatal error was encountered. The library 'libhostpolicy.so' required to execute the application was not found in '/home/runner/.dotnet'.");
 
             var process = new Process();
             process.StartInfo.CreateNoWindow = true;
-            //process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
