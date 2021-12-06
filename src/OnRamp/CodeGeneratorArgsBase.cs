@@ -69,7 +69,7 @@ namespace OnRamp
         }
 
         /// <inheritdoc/>
-        public T? GetParameter<T>(string key, bool throwWhereNotFound = false)
+        public T GetParameter<T>(string key, bool throwWhereNotFound = false)
         {
             if (Parameters.TryGetValue(key, out var value))
             {
@@ -82,7 +82,7 @@ namespace OnRamp
             if (throwWhereNotFound)
                 throw new CodeGenException($"Parameter '{key}' does not exist.");
 
-            return default;
+            return default!;
         }
     }
 }

@@ -104,7 +104,7 @@ namespace OnRamp
         /// <param name="throwWhereNotFound">Indicates to throw a <see cref="CodeGenException"/> when the specified key is not found.</param>
         /// <returns>The parameter value where found; otherwise, <c>null</c>.</returns>
         /// <exception cref="CodeGenException">The <see cref="CodeGenException"/>.</exception>
-        T? GetParameter<T>(string key, bool throwWhereNotFound = false);
+        T GetParameter<T>(string key, bool throwWhereNotFound = false);
 
         /// <summary>
         /// Copy and replace from <paramref name="args"/>.

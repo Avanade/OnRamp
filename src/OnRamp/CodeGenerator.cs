@@ -24,7 +24,7 @@ namespace OnRamp
         /// <param name="args">The <see cref="ICodeGeneratorArgs"/>.</param>
         /// <returns>The <see cref="CodeGenerator"/>.</returns>
         public static async Task<CodeGenerator> CreateAsync(ICodeGeneratorArgs args)
-            => new CodeGenerator(args, await LoadScriptsAsync(args));
+            => new CodeGenerator(args, await LoadScriptsAsync(args).ConfigureAwait(false));
 
         /// <summary>
         /// Load the Scripts.
