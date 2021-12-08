@@ -16,12 +16,14 @@ namespace OnRamp
         /// <param name="script">The corresponding <see cref="CodeGenScriptItem"/>.</param>
         /// <param name="directoryName">The optional generated directory name.</param>
         /// <param name="fileName">The generated file name.</param>
+        /// <param name="genOncePattern">The generated gen-once file name.</param>
         /// <param name="content">The generated content.</param>
-        public CodeGenOutputArgs(CodeGenScriptItem script, string? directoryName, string fileName, string? content)
+        public CodeGenOutputArgs(CodeGenScriptItem script, string? directoryName, string fileName, string? genOncePattern, string? content)
         {
             Script = script ?? throw new ArgumentNullException(nameof(script));
             DirectoryName = directoryName;
             FileName = string.IsNullOrEmpty(fileName) ? throw new ArgumentNullException(nameof(fileName)) : fileName;
+            GenOncePattern = genOncePattern;
             Content = content;
         }
 
@@ -44,5 +46,10 @@ namespace OnRamp
         /// Gets the generated content.
         /// </summary>
         public string? Content { get; }
+
+        /// <summary>
+        /// Gets the gen-once file name pattern (where specified).
+        /// </summary>
+        public string? GenOncePattern { get; }
     }
 }

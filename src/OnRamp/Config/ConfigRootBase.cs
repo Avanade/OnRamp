@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace OnRamp.Config
 {
     /// <summary>
-    /// Provides the <b>root</b> base <see cref="ConfigBase.Prepare(object, object)"/> configuration capabilities.
+    /// Provides the <b>root</b> base <see cref="ConfigBase.PrepareAsync(object, object)"/> configuration capabilities.
     /// </summary>
     /// <typeparam name="TRoot">The root <see cref="Type"/>.</typeparam>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
@@ -22,7 +22,7 @@ namespace OnRamp.Config
         /// <summary>
         /// Gets the parameter overrides.
         /// </summary>
-        public Dictionary<string, string?> RuntimeParameters { get; } = new Dictionary<string, string?>();
+        public Dictionary<string, object?> RuntimeParameters { get; } = new Dictionary<string, object?>();
 
         /// <summary>
         /// Sets the <see cref="ICodeGeneratorArgs"/>.
@@ -34,7 +34,7 @@ namespace OnRamp.Config
         /// Merges (adds or updates) <paramref name="parameters"/> into the <see cref="RuntimeParameters"/>.
         /// </summary>
         /// <param name="parameters">The parameters to merge.</param>
-        public void MergeRuntimeParameters(IDictionary<string, string?>? parameters)
+        public void MergeRuntimeParameters(IDictionary<string, object?>? parameters)
         {
             if (parameters == null)
                 return;

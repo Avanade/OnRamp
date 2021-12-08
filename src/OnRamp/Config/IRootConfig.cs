@@ -18,7 +18,7 @@ namespace OnRamp.Config
         /// <summary>
         /// Gets the parameter overrides.
         /// </summary>
-        Dictionary<string, string?> RuntimeParameters { get; }
+        Dictionary<string, object?> RuntimeParameters { get; }
 
         /// <summary>
         /// Sets the <see cref="CodeGeneratorArgs"/>.
@@ -30,7 +30,7 @@ namespace OnRamp.Config
         /// Merges (adds or updates) <paramref name="parameters"/> into the <see cref="RuntimeParameters"/>.
         /// </summary>
         /// <param name="parameters">The parameters to merge.</param>
-        void MergeRuntimeParameters(IDictionary<string, string?>? parameters);
+        void MergeRuntimeParameters(IDictionary<string, object?>? parameters);
 
         /// <summary>
         /// Resets (clears) the <see cref="RuntimeParameters"/>.

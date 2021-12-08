@@ -257,6 +257,7 @@ Attribute | Description
 `file` | The name of the file (artefact) that will be generated; this also supports _Handlebars_ syntax to enable runtime computation.
 `directory` | This is the sub-directory (path) where the file (artefact) will be generated; this also supports _Handlebars_ syntax to enable runtime computation.
 `genOnce` | This boolean (`true`/`false`) indicates whether the file is to be only generated once; i.e. only created where it does not already exist (optional).
+`genOncePattern` | The file name pattern to search, including wildcards, to validate if the file (artefact) already exists (where `genOnce` is `true`). This is optional and where not specified will default to `file`. This is useful in scenarios where the file name is not fixed; for example, contains date and time. 
 `text` | The text written to the log / console to enable additional context (optional).
 
 Any other YAML properties specified will be automatically passed in as runtime parameters (name/value pairs); see [`IRootConfig.RuntimeParameters`](./src/OnRamp/Config/IRootConfig.cs).
@@ -308,14 +309,14 @@ var stats = cg.Generate("Configuration.yaml");
 
 ## Console application
 
-[`OnRamp`](./src/OnRamp/Program.cs) can be executed as a console application directly; however, the experience has been optimized so that a new console application can reference and inherit the underlying capabilities.
+[`OnRamp`](./src/OnRamp/Console/CodeGenConsole.cs) has been optimized so that a new console application can reference and inherit the underlying capabilities.
 
-Where executing directly the command-line options are as follows:
+Where executing directly the default command-line options are as follows.
 
 ```
-OnRamp Code Generator.
+Xxx Code Generator.
 
-Usage: OnRamp [options]
+Usage: Xxx [options]
 
 Options:
   -?|-h|--help              Show help information.
@@ -336,7 +337,7 @@ The recommended approach is to [invoke](#Invoke) the _OnRamp_ capabilities direc
 
 ### Invoke
 
-Where the out-of-the-box capabiltity of _OnRamp_ is acceptable, then simply invoking the [`CodeGenConsole`](./src/OnRamp/CodeGenConsole.cs) will perform the code-generation using the embedded resources. The command-line arguments need to be passed through to support the standard options. Additional methods exist to specify defaults or change behaviour as required. An example `Program.cs` is as follows:
+Where the out-of-the-box capabiltity of _OnRamp_ is acceptable, then simply invoking the [`CodeGenConsole`](./src/OnRamp/Console/CodeGenConsole.cs) will perform the code-generation using the embedded resources. The command-line arguments need to be passed through to support the standard options. Additional methods exist to specify defaults or change behaviour as required. An example `Program.cs` is as follows.
 
 ``` csharp
 using OnRamp;
@@ -376,21 +377,6 @@ There is _no_ means to extend the underlying configuration .NET types directly. 
 
 <br/>
 
-## Database
-
-To enable possible code-generation using a database as a source the [`Database`](./src/OnRamp/Database/Database.cs) provides `GetSchemaAsync` that gets the underlying schema for all tables and their corresponding columns. This leverages the base .NET [`DbConnection`](https://docs.microsoft.com/en-us/dotnet/api/system.data.common.dbconnection) and standard ISO [`INFORMATION_SCHEMA`](https://docs.microsoft.com/en-us/sql/relational-databases/system-information-schema-views/system-information-schema-views-transact-sql) definition; therefore, should function against any database that supports; e.g. Microsoft Sql Server, Oracle Database, etc.
-
-The following database capabilities are provided:
-
-Class | Description
--|-
-[`Database`](./src/OnRamp/Database/Database.cs) | Provides core database access and related capabilities.
-[`DbTable`](./src/OnRamp/Database/DbTable.cs) | Provides database _table_ schema properties.
-[`DbColumn`](./src/OnRamp/Database/DbColumn.cs) | Provides database _column_ schema properties.
-[`DbType`](./src/OnRamp/Database/DbType.cs) | Provides database _type_ helper functions.
-
-</br>
-
 ## Utility
 
 Some additional utility capabilites have been provided:
@@ -400,6 +386,15 @@ Class | Description
 [`JsonSchemaGenerator`](./src/OnRamp/Utility/JsonSchemaGenerator.cs) | Provides the capability to generate a [JSON Schema](https://json-schema.org/) from the [configuration](#Configuration). This can then be published to the likes of the [JSON Schema Store](https://www.schemastore.org/) so that it can be used in Visual Studio and Visual Studio Code (or other editor of choice) to provide editor intellisense and basic validation.
 [`MarkdownDocumentationGenerator`](./src/OnRamp/Utility/MarkdownDocumentationGenerator.cs) | Provides the capability to generate [markdown](https://en.wikipedia.org/wiki/Markdown) documentation files from the [configuration](#Configuration). These can then be published within the owning source code repository or to a wiki to provide corresponding documentation.
 [`StringConverter`](./src/OnRamp/Utility/StringConverter.cs) | Provides additional string conversions that are useful where generating code; for example: `ToCamelCase`, `ToPascalCase`, `ToPrivateCase`, `ToSentenceCase`, `ToSnakeCase`, `ToKebabCase`, `ToPastTense`, `ToPlural`, `ToSingle`, `ToComments` and `ToSeeComments`.
+
+<br/>
+
+## Other repos
+
+These other _Avanade_ repositories leverage _OnRamp_ to provide code-generation capabilities:
+- [DbEx](https://github.com/Avanade/DbEx) - Database and DBUP extensions.
+- [NTangle](https://github.com/Avanade/NTangle) - Change Data Capture (CDC) code generation tool and runtime.
+- [Beef](https://github.com/Avanade/Beef) - Business Entity Execution Framework to enable industralisation of API development.
 
 <br/>
 

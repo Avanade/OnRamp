@@ -57,14 +57,15 @@ namespace OnRamp.Generators
 
             Handlebars.Configuration.TextEncoder = null;
 
-            using var stream = StreamLocator.GetTemplateStreamReader(script.Template!, script.Root!.CodeGenArgs!.Assemblies.ToArray());
+            using var stream = StreamLocator.GetTemplateStreamReader(script.Template!, script.Root!.CodeGenArgs!.Assemblies.ToArray(), StreamLocator.HandlebarsExtensions).StreamReader;
             var contentHandlebars = new HandlebarsCodeGenerator(stream!);
             var fileNameHandlebars = new HandlebarsCodeGenerator(script.File!);
+            var genOncePatternHandlebars = string.IsNullOrEmpty(script.GenOncePattern) ? null : new HandlebarsCodeGenerator(script.GenOncePattern!);
             var directoryNameHandlebars = string.IsNullOrEmpty(script.Directory) ? null : new HandlebarsCodeGenerator(script.Directory);
 
             foreach (var val in values)
             {
-                var args = new CodeGenOutputArgs(script, directoryNameHandlebars?.Generate(val), fileNameHandlebars.Generate(val), contentHandlebars.Generate(val));
+                var args = new CodeGenOutputArgs(script, directoryNameHandlebars?.Generate(val), fileNameHandlebars.Generate(val), genOncePatternHandlebars?.Generate(val), contentHandlebars.Generate(val));
                 artefactGenerated(args);
             }
         }

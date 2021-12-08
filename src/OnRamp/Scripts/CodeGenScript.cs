@@ -5,6 +5,7 @@ using OnRamp.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OnRamp.Scripts
 {
@@ -69,7 +70,7 @@ namespace OnRamp.Scripts
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        protected override void Prepare()
+        protected override async Task PrepareAsync()
         {
             // Make sure config type exists and is ConfigRootBase<>.
             try
@@ -103,7 +104,7 @@ namespace OnRamp.Scripts
             }
 
             // Prepare the Generators collection.
-            Generators = PrepareCollection(Generators);
+            Generators = await PrepareCollectionAsync(Generators).ConfigureAwait(false);
         }
     }
 }

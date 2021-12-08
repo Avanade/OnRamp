@@ -46,12 +46,12 @@ namespace OnRamp.Console
         OutputDirectory = 64,
 
         /// <summary>
-        /// Supports overridding <see cref="ICodeGeneratorArgs.ConnectionString"/>.
+        /// Supports overridding <see cref="ICodeGeneratorDbArgs.ConnectionString"/>.
         /// </summary>
         DatabaseConnectionString = 128,
 
         /// <summary>
-        /// Supports overridding <see cref="ICodeGeneratorArgs.ConnectionStringEnvironmentVariableName"/>.
+        /// Supports overridding <see cref="ICodeGeneratorDbArgs.ConnectionStringEnvironmentVariableName"/>.
         /// </summary>
         DatabaseConnectionStringEnvironmentVariableName = 256,
 

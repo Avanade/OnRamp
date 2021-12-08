@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OnRamp.Config
 {
@@ -208,7 +209,7 @@ namespace OnRamp.Config
         /// </summary>
         /// <param name="root">The root <see cref="ConfigBase"/>.</param>
         /// <param name="parent">The parent <see cref="ConfigBase"/>.</param>
-        internal abstract void Prepare(object root, object parent);
+        internal abstract Task PrepareAsync(object root, object parent);
 
         /// <summary>
         /// Gets or sets the <see cref="Dictionary{TKey, TValue}"/> that houses any additional/extra properties/attributes deserialized within the configuration.

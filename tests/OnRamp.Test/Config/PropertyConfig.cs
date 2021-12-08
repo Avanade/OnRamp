@@ -1,5 +1,6 @@
 ﻿using OnRamp.Config;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 #nullable enable
 
@@ -24,9 +25,10 @@ namespace OnRamp.Test.Config
         [CodeGenProperty("Key", Title = "Indicates whether the property is nullable.")]
         public bool? IsNullable { get; set; }
 
-        protected override void Prepare()
+        protected override Task PrepareAsync()
         {
             Type = DefaultWhereNull(Type, () => "string");
+            return Task.CompletedTask;
         }
     }
 }

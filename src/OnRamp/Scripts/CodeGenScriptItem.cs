@@ -6,6 +6,7 @@ using OnRamp.Generators;
 using OnRamp.Utility;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OnRamp.Scripts
 {
@@ -42,17 +43,17 @@ namespace OnRamp.Scripts
         /// <summary>
         /// Gets or sets the file name.
         /// </summary>
-        /// <remarks>The name supports <b>Handlebars</b> syntax.</remarks>
+        /// <remarks>Supports <b>Handlebars</b> syntax.</remarks>
         [JsonProperty("file")]
-        [CodeGenProperty("Key", Title = "The file name.", IsMandatory = true, Description = "The name supports _Handlebars_ syntax.")]
+        [CodeGenProperty("Key", Title = "The file name.", IsMandatory = true, Description = "Supports _Handlebars_ syntax.")]
         public string? File { get; set; }
 
         /// <summary>
         /// Gets or sets the directory name.
         /// </summary>
-        /// <remarks>The name supports <b>Handlebars</b> syntax.</remarks>
+        /// <remarks>Supports <b>Handlebars</b> syntax.</remarks>
         [JsonProperty("directory")]
-        [CodeGenProperty("Key", Title = "The directory name.", Description = "The name supports _Handlebars_ syntax.")]
+        [CodeGenProperty("Key", Title = "The directory name.", Description = "Supports _Handlebars_ syntax.")]
         public string? Directory { get; set; }
 
         /// <summary>
@@ -61,6 +62,14 @@ namespace OnRamp.Scripts
         [JsonProperty("genOnce")]
         [CodeGenProperty("Key", Title = "Indicates whether the file is only generated once; i.e. only created where it does not already exist.")]
         public bool IsGenOnce { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gen-once file name pattern to check (can include wildcard '<c>*</c>' characters).
+        /// </summary>
+        /// <remarks>Supports <b>Handlebars</b> syntax.</remarks>
+        [JsonProperty("genOncePattern")]
+        [CodeGenProperty("Key", Title = "The gen-once file name pattern to check (can include wildcard `*` characters).", Description = "Supports _Handlebars_ syntax. Defaults to `File` where not specified.")]
+        public string? GenOncePattern { get; set; }
 
         /// <summary>
         /// Gets or sets the help text.
@@ -72,7 +81,7 @@ namespace OnRamp.Scripts
         /// <summary>
         /// Gets the runtime parameters (as specified via <see cref="ConfigBase.ExtraProperties"/>).
         /// </summary>
-        public Dictionary<string, string?> RuntimeParameters { get; } = new Dictionary<string, string?>();
+        public Dictionary<string, object?> RuntimeParameters { get; } = new Dictionary<string, object?>();
 
         /// <summary>
         /// Gets the <see cref="CodeGeneratorBase"/> as specified by <see cref="Type"/>.
@@ -83,7 +92,7 @@ namespace OnRamp.Scripts
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        protected override void Prepare()
+        protected override Task PrepareAsync()
         {
             // Make sure generator type exists and is CodeGeneratorBase.
             Type type;
@@ -102,8 +111,14 @@ namespace OnRamp.Scripts
             catch (Exception ex) { throw new CodeGenException(this, nameof(Type), $"Type '{Type}' is invalid: {ex.Message}"); }
 
             // Make sure the template exists.
-            if (!StreamLocator.HasTemplateStream(Template!, Root!.CodeGenArgs!.Assemblies.ToArray()))
+            var r = StreamLocator.HasTemplateStream(Template!, Root!.CodeGenArgs!.Assemblies.ToArray(), StreamLocator.HandlebarsExtensions);
+            if (!r.Exists)
                 throw new CodeGenException(this, nameof(Template), $"Template '{Template}' does not exist.");
+
+            Template = r.FileName;
+
+            // Add special runtime parameters.
+            RuntimeParameters.Add(nameof(IsGenOnce), IsGenOnce);
 
             // Convert any extra properties as runtime parameters.
             try
@@ -117,6 +132,8 @@ namespace OnRamp.Scripts
                 }
             }
             catch (Exception ex) { throw new CodeGenException(this, nameof(ExtraProperties), $"Error converting into RuntimeParameters: {ex.Message}"); }
+
+            return Task.CompletedTask;
         }
     }
 }

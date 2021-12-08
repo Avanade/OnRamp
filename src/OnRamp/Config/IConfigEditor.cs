@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
+using System.Threading.Tasks;
+
 namespace OnRamp.Config
 {
     /// <summary>
@@ -9,19 +11,19 @@ namespace OnRamp.Config
     public interface IConfigEditor
     {
         /// <summary>
-        /// Edit the <paramref name="config"/> <i>before</i> the <see cref="ConfigBase.Prepare(object, object)"/> has been performed.
+        /// Edit the <paramref name="config"/> <i>before</i> the <see cref="ConfigBase.PrepareAsync(object, object)"/> has been performed.
         /// </summary>
         /// <param name="config">The root <see cref="ConfigRootBase{TRoot}"/>.</param>
         /// <remarks>Any additional properties added to the configuration file will be automatically added to <see cref="ConfigBase.ExtraProperties"/> when deserialized from JSON/YAML; the <see cref="ConfigBase.CustomProperties"/> is also 
         /// provided to enable additional custom configuration to be added that can be referenced directly by the code-generation templates.</remarks>
-        void BeforePrepare(IRootConfig config) { }
+        Task BeforePrepareAsync(IRootConfig config) => Task.CompletedTask;
 
         /// <summary>
-        /// Edit the <paramref name="config"/> <i>after</i> the <see cref="ConfigBase.Prepare(object, object)"/> has been performed.
+        /// Edit the <paramref name="config"/> <i>after</i> the <see cref="ConfigBase.PrepareAsync(object, object)"/> has been performed.
         /// </summary>
         /// <param name="config">The root <see cref="ConfigRootBase{TRoot}"/>.</param>
         /// <remarks>Any additional properties added to the configuration file will be automatically added to <see cref="ConfigBase.ExtraProperties"/> when deserialized from JSON/YAML; the <see cref="ConfigBase.CustomProperties"/> is also 
         /// provided to enable additional custom configuration to be added that can be referenced directly by the code-generation templates.</remarks>
-        void AfterPrepare(IRootConfig config) { }
+        Task AfterPrepareAsync(IRootConfig config) => Task.CompletedTask;
     }
 }

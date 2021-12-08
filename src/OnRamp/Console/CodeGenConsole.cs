@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 namespace OnRamp.Console
 {
     /// <summary>
-    /// Base console that facilitates the code generation by managing the standard console command-line arguments/options.
+    /// Console that facilitates the code generation by managing the standard console command-line arguments/options.
     /// </summary>
     /// <remarks>The standard console command-line arguments/options can be controlled via the constructor using the <see cref="SupportedOptions"/> flags. Additional capabilities can be added by inherting and overridding the
-    /// <see cref="OnBeforeExecute(CommandLineApplication)"/>, <see cref="OnValidation(ValidationContext)"/> and <see cref="OnCodeGeneration"/>. Changes to the console output can be achieved by overridding
+    /// <see cref="OnBeforeExecute(CommandLineApplication)"/>, <see cref="OnValidation(ValidationContext)"/> and <see cref="OnCodeGenerationAsync"/>. Changes to the console output can be achieved by overridding
     /// <see cref="OnWriteMasthead"/>, <see cref="OnWriteHeader"/>, <see cref="OnWriteArgs(ICodeGeneratorArgs)"/> and <see cref="OnWriteFooter(CodeGenStatistics)"/>.
     /// <para>The underlying command line parsing is provided by <see href="https://natemcmaster.github.io/CommandLineUtils/"/>.</para></remarks>
-    public abstract class CodeGenConsoleBase
+    public class CodeGenConsole
     {
         private readonly SupportedOptions _supportedOptions;
         private readonly Dictionary<SupportedOptions, CommandOption?> _options = new();
@@ -66,44 +66,11 @@ namespace OnRamp.Console
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeGenConsole"/> class.
         /// </summary>
-        /// <param name="name">The application/command name.</param>
-        /// <param name="text">The application/command short text.</param>
-        /// <param name="description">The application/command description; will default to <paramref name="text"/> when not specified.</param>
-        /// <param name="version">The application/command version number.</param>
-        /// <param name="options">The console command-line <see cref="SupportedOptions"/>; defaults to <see cref="SupportedOptions.All"/>.</param>
         /// <param name="args">The default <see cref="CodeGeneratorArgs"/> that will be overridden/updated by the command-line argument values.</param>
-        protected CodeGenConsoleBase(string name, string text, string? description = null, string? version = null, SupportedOptions options = SupportedOptions.All, CodeGeneratorArgs? args = null)
+        /// <param name="options">The console command-line <see cref="SupportedOptions"/>; defaults to <see cref="SupportedOptions.All"/>.</param>
+        public CodeGenConsole(CodeGeneratorArgs? args = null, SupportedOptions options = SupportedOptions.All)
         {
             Args = args ?? new CodeGeneratorArgs();
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Text = text ?? throw new ArgumentNullException(nameof(text));
-            Description = description ?? Text;
-            Version = version;
-            _supportedOptions = options;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeGenConsole"/> class defaulting <see cref="Name"/> (with <see cref="AssemblyName.Name"/>), <see cref="Text"/> (with <see cref="AssemblyProductAttribute.Product"/>),
-        /// <see cref="Description"/> (with <see cref="AssemblyDescriptionAttribute.Description"/>), and <see cref="Version"/> (with <see cref="AssemblyName.Version"/>) from the <paramref name="assembly"/> where not expressly provided.
-        /// </summary>
-        /// <param name="args">The default <see cref="CodeGeneratorArgs"/> that will be overridden/updated by the command-line argument values.</param>
-        /// <param name="assembly">The <see cref="Assembly"/> to infer properties where not expressly provided.</param>
-        /// <param name="name">The application/command name; defaults to <see cref="AssemblyName.Name"/>.</param>
-        /// <param name="text">The application/command short text.</param>
-        /// <param name="description">The application/command description; defaults to <paramref name="text"/> when not specified.</param>
-        /// <param name="version">The application/command version number.</param>
-        /// <param name="options">The console command-line <see cref="SupportedOptions"/>; defaults to <see cref="SupportedOptions.All"/>.</param>
-        protected CodeGenConsoleBase(Assembly assembly, CodeGeneratorArgs? args = null, string? name = null, string? text = null, string? description = null, string? version = null, SupportedOptions options = SupportedOptions.All)
-        {
-            if (assembly == null)
-                throw new ArgumentNullException(nameof(assembly));
-
-            Args = args ?? new CodeGeneratorArgs();
-            var an = assembly.GetName();
-            Name = name ?? an?.Name ?? throw new ArgumentException("Unable to infer name.", nameof(name));
-            Text = text ?? assembly.GetCustomAttribute<AssemblyProductAttribute>()?.Product ?? throw new ArgumentException("Unable to infer text.", nameof(text));
-            Version = version ?? (assembly ?? throw new ArgumentNullException(nameof(assembly))).GetName()?.Version?.ToString(3);
-            Description = description ?? assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description ?? Text;
             _supportedOptions = options;
         }
 
@@ -115,22 +82,12 @@ namespace OnRamp.Console
         /// <summary>
         /// Gets the application/command name.
         /// </summary>
-        public string Name { get; }
+        public virtual string AppName => (Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly()).GetName()?.Name ?? "UNKNOWN";
 
         /// <summary>
-        /// Gets the application/command short text.
+        /// Gets the application/command title. 
         /// </summary>
-        public string Text { get; }
-
-        /// <summary>
-        /// Gets the application/command description.
-        /// </summary>
-        public string? Description { get; }
-
-        /// <summary>
-        /// Gets the application/command version.
-        /// </summary>
-        public string? Version { get; }
+        public virtual string AppTitle => $"{AppName} Code Generation Tool.";
 
         /// <summary>
         /// Gets the <see cref="Args"/> <see cref="ICodeGeneratorArgs.Logger"/>.
@@ -146,7 +103,7 @@ namespace OnRamp.Console
         /// Gets or sets the masthead text used by <see cref="OnWriteMasthead"/>.
         /// </summary>
         /// <remarks>Defaults to 'OnRamp Code-Gen Tool' formatted using <see href="https://www.patorjk.com/software/taag/#p=display&amp;f=Calvin%20S&amp;t=OnRamp%20Code-Gen%20Tool"/>.</remarks>
-        public string? MastheadText { get; set; } = @"
+        public string? MastheadText { get; protected set; } = @"
 ╔═╗┌┐┌╦═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┬┐┌─┐  ╔═╗┌─┐┌┐┌  ╔╦╗┌─┐┌─┐┬  
 ║ ║│││╠╦╝├─┤│││├─┘  ║  │ │ ││├┤───║ ╦├┤ │││   ║ │ ││ ││  
 ╚═╝┘└┘╩╚═┴ ┴┴ ┴┴    ╚═╝└─┘─┴┘└─┘  ╚═╝└─┘┘└┘   ╩ └─┘└─┘┴─┘
@@ -170,7 +127,7 @@ namespace OnRamp.Console
             Utility.HandlebarsHelpers.Logger ??= Args.Logger;
 
             // Set up the app.
-            using var app = new CommandLineApplication(PhysicalConsole.Singleton) { Name = Name, Description = Description };
+            using var app = new CommandLineApplication(PhysicalConsole.Singleton) { Name = AppName, Description = AppTitle };
             app.HelpOption();
 
             _options.Add(SupportedOptions.ScriptFileName, _supportedOptions.HasFlag(SupportedOptions.ScriptFileName) ? app.Option("-s|--script", "Script orchestration file/resource name.", CommandOptionType.SingleValue) : null);
@@ -219,7 +176,7 @@ namespace OnRamp.Console
             });
 
             // Set up the code generation execution.
-            app.OnExecute(() => RunRunaway());
+            app.OnExecuteAsync(async _ => await RunRunawayAsync().ConfigureAwait(false));
 
             // Execute the command-line app.
             try
@@ -231,6 +188,12 @@ namespace OnRamp.Console
                 Args.Logger?.LogError(cpex.Message);
                 Args.Logger?.LogError(string.Empty);
                 return 1;
+            }
+            catch (CodeGenException cgex)
+            {
+                Args.Logger?.LogError(cgex.Message);
+                Args.Logger?.LogError(string.Empty);
+                return 2;
             }
         }
 
@@ -294,7 +257,7 @@ namespace OnRamp.Console
         /// <summary>
         /// Performs the actual code-generation.
         /// </summary>
-        private int RunRunaway() /* Method name inspired by: Slade - Run Runaway - https://www.youtube.com/watch?v=gMxcGaAwy-Q */
+        private async Task<int> RunRunawayAsync() /* Method name inspired by: Slade - Run Runaway - https://www.youtube.com/watch?v=gMxcGaAwy-Q */
         {
             try
             {
@@ -307,9 +270,7 @@ namespace OnRamp.Console
                 }
 
                 // Run the code generator.
-                var stats = OnCodeGeneration() ?? throw new InvalidOperationException($"A {nameof(CodeGenStatistics)} instance must be returned from {nameof(OnCodeGeneration)}.");
-                if (stats == null)
-                    return 4;
+                var stats = (await OnCodeGenerationAsync().ConfigureAwait(false)) ?? throw new InvalidOperationException($"A {nameof(CodeGenStatistics)} instance must be returned from {nameof(OnCodeGenerationAsync)}.");
 
                 // Write footer and exit successfully.
                 if (!BypassOnWrites)
@@ -317,14 +278,11 @@ namespace OnRamp.Console
 
                 return 0;
             }
-            catch (CodeGenException gcex)
+            catch (CodeGenException cgex)
             {
-                if (gcex.Message != null)
+                if (cgex.Message != null)
                 {
-                    Args.Logger?.LogError(gcex.Message);
-                    if (gcex.InnerException != null)
-                        Args.Logger?.LogError(gcex.InnerException.Message);
-
+                    Args.Logger?.LogError(cgex.Message);
                     Args.Logger?.LogError(string.Empty);
                 }
 
@@ -351,16 +309,20 @@ namespace OnRamp.Console
         /// Invoked to instantiate and run a <see cref="CodeGenerator"/> using the <see cref="Args"/> returning the corresponding <see cref="CodeGenStatistics"/>.
         /// </summary>
         /// <remarks>The code invoked internally is: <c>return new CodeGenerator(Args).Generate();</c></remarks>
-        /// <returns>The <see cref="CodeGenStatistics"/> where successful; otherwise, <c>null</c>. This will result in a '4' being returned by <see cref="RunAsync(string[])"/>.</returns>
-        protected virtual CodeGenStatistics? OnCodeGeneration() => new CodeGenerator(Args).Generate();
+        /// <returns>The <see cref="CodeGenStatistics"/> where successful.</returns>
+        protected virtual async Task<CodeGenStatistics> OnCodeGenerationAsync()
+        {
+            var cg = await CodeGenerator.CreateAsync(Args).ConfigureAwait(false);
+            return await cg.GenerateAsync().ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Invoked to write the header information to the <see cref="Logger"/>.
         /// </summary>
-        /// <remarks>Writes the <see cref="Text"/> and <see cref="Version"/>.</remarks>
+        /// <remarks>Writes the <see cref="AppTitle"/>.</remarks>
         protected virtual void OnWriteHeader()
         {
-            Logger?.LogInformation($"{Text}{(Version == null ? "" : $" [v{Version}]")}");
+            Logger?.LogInformation(AppTitle);
             Logger?.LogInformation(string.Empty);
         }
 
@@ -379,26 +341,26 @@ namespace OnRamp.Console
             if (args == null || args.Logger == null)
                 return;
 
-            args.Logger?.LogInformation($"Config = {args.ConfigFileName}");
-            args.Logger?.LogInformation($"Script = {args.ScriptFileName}");
-            args.Logger?.LogInformation($"OutDir = {args.OutputDirectory?.FullName}");
-            args.Logger?.LogInformation($"ExpectNoChanges = {args.ExpectNoChanges}");
-            args.Logger?.LogInformation($"IsSimulation = {args.IsSimulation}");
+            args.Logger.LogInformation($"Config = {args.ConfigFileName}");
+            args.Logger.LogInformation($"Script = {args.ScriptFileName}");
+            args.Logger.LogInformation($"OutDir = {args.OutputDirectory?.FullName}");
+            args.Logger.LogInformation($"ExpectNoChanges = {args.ExpectNoChanges}");
+            args.Logger.LogInformation($"IsSimulation = {args.IsSimulation}");
 
-            args.Logger?.LogInformation($"Parameters{(args.Parameters.Count == 0 ? " = none" : ":")}");
+            args.Logger.LogInformation($"Parameters{(args.Parameters.Count == 0 ? " = none" : ":")}");
             foreach (var p in args.Parameters)
             {
-                args.Logger?.LogInformation($"  {p.Key} = {p.Value}");
+                args.Logger.LogInformation($"  {p.Key} = {p.Value}");
             }
 
-            args.Logger?.LogInformation($"Assemblies{(args.Assemblies.Count == 0 ? " = none" : ":")}");
+            args.Logger.LogInformation($"Assemblies{(args.Assemblies.Count == 0 ? " = none" : ":")}");
             foreach (var a in args.Assemblies)
             {
-                args.Logger?.LogInformation($"  {a.FullName}");
+                args.Logger.LogInformation($"  {a.FullName}");
             }
 
-            args.Logger?.LogInformation(string.Empty);
-            args.Logger?.LogInformation("Scripts:");
+            args.Logger.LogInformation(string.Empty);
+            args.Logger.LogInformation("Scripts:");
         }
 
         /// <summary>
@@ -408,7 +370,7 @@ namespace OnRamp.Console
         protected virtual void OnWriteFooter(CodeGenStatistics stats)
         {
             Logger?.LogInformation(string.Empty);
-            Logger?.LogInformation($"Complete. {stats.ToSummaryString()}");
+            Logger?.LogInformation($"{AppName} Complete. {stats.ToSummaryString()}");
             Logger?.LogInformation(string.Empty);
         }
     }

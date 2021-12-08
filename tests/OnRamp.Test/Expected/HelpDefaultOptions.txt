@@ -1,4 +1,4 @@
-﻿OnRamp Code Generator.
+﻿OnRamp Code Generation Tool.
 
 Usage: OnRamp [options]
 
