@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.3
+- *Republish:* Version updated and republished NuGet to correct issue.
+
 ## V1.0.2
 - *Removed:* `Database` and related capabilities have been removed; these capabilities now reside in [DbEx](https://github.com/Avanade/DbEx).
 - *New:* The database connection capabilities within `ICodeGeneratorArgs` have been moved into a new `ICodeGeneratorDbArgs` to enable this _base_ functionality to be leveraged without the other properties.
