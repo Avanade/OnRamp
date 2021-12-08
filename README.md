@@ -309,14 +309,14 @@ var stats = cg.Generate("Configuration.yaml");
 
 ## Console application
 
-[`OnRamp`](./src/OnRamp/Program.cs) can be executed as a console application directly; however, the experience has been optimized so that a new console application can reference and inherit the underlying capabilities.
+[`OnRamp`](./src/OnRamp/Console/CodeGenConsole.cs) has been optimized so that a new console application can reference and inherit the underlying capabilities.
 
-Where executing directly the command-line options are as follows:
+Where executing directly the default command-line options are as follows.
 
 ```
-OnRamp Code Generator.
+Xxx Code Generator.
 
-Usage: OnRamp [options]
+Usage: Xxx [options]
 
 Options:
   -?|-h|--help              Show help information.
@@ -337,7 +337,7 @@ The recommended approach is to [invoke](#Invoke) the _OnRamp_ capabilities direc
 
 ### Invoke
 
-Where the out-of-the-box capabiltity of _OnRamp_ is acceptable, then simply invoking the [`CodeGenConsole`](./src/OnRamp/CodeGenConsole.cs) will perform the code-generation using the embedded resources. The command-line arguments need to be passed through to support the standard options. Additional methods exist to specify defaults or change behaviour as required. An example `Program.cs` is as follows:
+Where the out-of-the-box capabiltity of _OnRamp_ is acceptable, then simply invoking the [`CodeGenConsole`](./src/OnRamp/Console/CodeGenConsole.cs) will perform the code-generation using the embedded resources. The command-line arguments need to be passed through to support the standard options. Additional methods exist to specify defaults or change behaviour as required. An example `Program.cs` is as follows.
 
 ``` csharp
 using OnRamp;
@@ -376,21 +376,6 @@ To enable consumers of a code-generator to personalize, and/or override, the pub
 There is _no_ means to extend the underlying configuration .NET types directly. However, as all the configuration types inherit from [`ConfigBase`](./src/OnRamp/Config/ConfigBase.cs) the `ExtraProperties` hash table is populated with any additional configurations during the deserialization process. These values can then be referenced direcly within the Templates as required. To perform further changes to the configuration at runtime an [`IConfigEditor`](./src/OnRamp/Config/IConfigEditor.cs) can be added and then referenced from within the corresponding `Scripts` file; it will then be invoked during code generation enabling further changes to occur. The `ConfigBase.CustomProperties` hash table is further provided to enable custom properties to be set and referenced in a consistent manner.
 
 <br/>
-
-## Database
-
-To enable possible code-generation using a database as a source the [`Database`](./src/OnRamp/Database/Database.cs) provides `GetSchemaAsync` that gets the underlying schema for all tables and their corresponding columns. This leverages the base .NET [`DbConnection`](https://docs.microsoft.com/en-us/dotnet/api/system.data.common.dbconnection) and standard ISO [`INFORMATION_SCHEMA`](https://docs.microsoft.com/en-us/sql/relational-databases/system-information-schema-views/system-information-schema-views-transact-sql) definition; therefore, should function against any database that supports; e.g. Microsoft Sql Server, Oracle Database, etc.
-
-The following database capabilities are provided:
-
-Class | Description
--|-
-[`Database`](./src/OnRamp/Database/Database.cs) | Provides core database access and related capabilities.
-[`DbTable`](./src/OnRamp/Database/DbTable.cs) | Provides database _table_ schema properties.
-[`DbColumn`](./src/OnRamp/Database/DbColumn.cs) | Provides database _column_ schema properties.
-[`DbType`](./src/OnRamp/Database/DbType.cs) | Provides database _type_ helper functions.
-
-</br>
 
 ## Utility
 
