@@ -389,6 +389,15 @@ Class | Description
 
 <br/>
 
+## Other repos
+
+These other _Avanade_ repositories leverage _OnRamp_ to provide code-generation capabilities:
+- [DbEx](https://github.com/Avanade/DbEx) - Database and DBUP extensions.
+- [NTangle](https://github.com/Avanade/NTangle) - Change Data Capture (CDC) code generation tool and runtime.
+- [Beef](https://github.com/Avanade/Beef) - Business Entity Execution Framework to enable industralisation of API development.
+
+<br/>
+
 ## License
 
 _OnRamp_ is open source under the [MIT license](./LICENSE) and is free for commercial use.
