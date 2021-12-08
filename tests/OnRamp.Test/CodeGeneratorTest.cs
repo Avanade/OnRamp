@@ -157,7 +157,7 @@ namespace OnRamp.Test
         [Test]
         public async Task E130_Config_InvalidOption()
         {
-            var cg = await CodeGenerator.CreateAsync(new CodeGeneratorArgs("ValidEntity.yaml").AddAssembly(typeof(CodeGeneratorTest).Assembly));
+            var cg = await CodeGenerator.CreateAsync(new CodeGeneratorArgs("ValidEntity").AddAssembly(typeof(CodeGeneratorTest).Assembly));
             var ex = Assert.ThrowsAsync<CodeGenException>(() => cg.GenerateAsync("Data/InvalidOption.yaml"));
             Assert.AreEqual("Config 'Data/InvalidOption.yaml' is invalid: [Property(Name='Salary').Type] Value 'unknown' is invalid; valid values are: 'string', 'int', 'decimal'.", ex.Message);
         }

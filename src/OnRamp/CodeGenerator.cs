@@ -31,7 +31,9 @@ namespace OnRamp
         /// </summary>
         private static async Task<CodeGenScript> LoadScriptsAsync(ICodeGeneratorArgs args)
         {
-            using var s = StreamLocator.GetScriptStreamReader(args.ScriptFileName ?? throw new CodeGenException("Script file name must be specified."), args.Assemblies.ToArray()) ?? throw new CodeGenException($"Script '{args.ScriptFileName}' does not exist.");
+            var r = StreamLocator.GetScriptStreamReader(args.ScriptFileName ?? throw new CodeGenException("Script file name must be specified."), args.Assemblies.ToArray(), StreamLocator.YamlJsonExtensions);
+            using var s = r.StreamReader ?? throw new CodeGenException($"Script '{args.ScriptFileName}' does not exist.");
+            args.ScriptFileName = r.FileName;
             return await LoadScriptStreamAsync(args, null, args.ScriptFileName, s).ConfigureAwait(false);
         }
 
@@ -71,7 +73,7 @@ namespace OnRamp
                 {
                     foreach (var ifn in scripts.Inherits)
                     {
-                        using var s = StreamLocator.GetScriptStreamReader(ifn, args.Assemblies.ToArray()) ?? throw new CodeGenException($"Script '{ifn}' does not exist.");
+                        using var s = StreamLocator.GetScriptStreamReader(ifn, args.Assemblies.ToArray(), StreamLocator.YamlJsonExtensions).StreamReader ?? throw new CodeGenException($"Script '{ifn}' does not exist.");
                         var inherit = await LoadScriptStreamAsync(args, rootScript, ifn, s).ConfigureAwait(false);
                         foreach (var iscript in inherit.Generators!)
                         {
@@ -124,8 +126,9 @@ namespace OnRamp
         public async Task<CodeGenStatistics> GenerateAsync(string? configFileName = null)
         {
             var fn = configFileName ?? CodeGenArgs.ConfigFileName ?? throw new CodeGenException("Config file must be specified.");
-            using var sr = StreamLocator.GetStreamReader(fn, null, CodeGenArgs.Assemblies.ToArray()) ?? throw new CodeGenException($"Config '{fn}' does not exist.");
-            return await GenerateAsync(fn, sr, StreamLocator.GetContentType(fn)).ConfigureAwait(false);
+            var r = StreamLocator.GetStreamReader(fn, null, CodeGenArgs.Assemblies.ToArray());
+            using var sr = r.StreamReader ?? throw new CodeGenException($"Config '{fn}' does not exist.");
+            return await GenerateAsync(fn, sr, StreamLocator.GetContentType(r.FileName)).ConfigureAwait(false);
         }
 
         /// <summary>

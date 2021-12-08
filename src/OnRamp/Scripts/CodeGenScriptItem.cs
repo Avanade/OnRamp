@@ -111,8 +111,11 @@ namespace OnRamp.Scripts
             catch (Exception ex) { throw new CodeGenException(this, nameof(Type), $"Type '{Type}' is invalid: {ex.Message}"); }
 
             // Make sure the template exists.
-            if (!StreamLocator.HasTemplateStream(Template!, Root!.CodeGenArgs!.Assemblies.ToArray()))
+            var r = StreamLocator.HasTemplateStream(Template!, Root!.CodeGenArgs!.Assemblies.ToArray(), StreamLocator.HandlebarsExtensions);
+            if (!r.Exists)
                 throw new CodeGenException(this, nameof(Template), $"Template '{Template}' does not exist.");
+
+            Template = r.FileName;
 
             // Add special runtime parameters.
             RuntimeParameters.Add(nameof(IsGenOnce), IsGenOnce);
