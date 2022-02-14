@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.4
+- [*Issue 12:*](https://github.com/Avanade/OnRamp/issues/12) Added `CodeGenPropertyAttribute.IsUnique` to enable configurable property value uniqueness validation checking.
+
 ## v1.0.3
 - *Republish:* Version updated and republished NuGet to correct issue.
 

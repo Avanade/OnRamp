@@ -14,7 +14,7 @@ namespace OnRamp.Test.Config
         public override string QualifiedKeyName => BuildQualifiedKeyName("Property", Name);
 
         [JsonProperty("name")]
-        [CodeGenProperty("Key", Title = "The property name.", IsMandatory = true)]
+        [CodeGenProperty("Key", Title = "The property name.", IsMandatory = true, IsUnique = true)]
         public string? Name { get; set; }
 
         [JsonProperty("type")]

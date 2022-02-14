@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace OnRamp.Config
@@ -94,13 +95,33 @@ namespace OnRamp.Config
         /// <typeparam name="T">The item <see cref="Type"/>.</typeparam>
         /// <param name="coll">The sub-collection to be <see cref="ConfigBase.PrepareAsync(object, object)"/>.</param>
         /// <returns>A new collection where <paramref name="coll"/> is <c>null</c>; otherwise, the <paramref name="coll"/> instance.</returns>
+        /// <remarks>This will also perform the <see cref="CodeGenPropertyAttribute.IsUnique"/> checks.</remarks>
         protected async Task<List<T>> PrepareCollectionAsync<T>(List<T>? coll) where T : ConfigBase
         {
             if (coll == null)
                 return new List<T>();
 
+            var dict = new Dictionary<PropertyInfo, HashSet<object?>>();
+            foreach (var pi in typeof(T).GetProperties())
+            {
+                foreach (var psa in pi.GetCustomAttributes(typeof(CodeGenPropertyAttribute), true).OfType<CodeGenPropertyAttribute>())
+                {
+                    if (psa.IsUnique)
+                        dict.Add(pi, new HashSet<object?>());
+                }
+            }
+
             foreach (var entity in coll)
             {
+                foreach (var kvp in dict)
+                {
+                    var val = kvp.Key.GetValue(entity);
+                    if (kvp.Value.TryGetValue(val, out _))
+                        throw new CodeGenException(entity, kvp.Key.Name, $"Value '{val}' is not unique.");
+
+                    kvp.Value.Add(val);
+                }
+
                 await entity.PrepareAsync(Root!, this).ConfigureAwait(false);
             }
 

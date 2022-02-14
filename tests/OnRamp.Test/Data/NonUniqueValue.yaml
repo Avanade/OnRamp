@@ -1,0 +1,5 @@
+﻿name: Person
+properties:
+- { name: Amount }
+- { name: Count, type: int }
+- { name: Amount, type: decimal, isNullable: true }

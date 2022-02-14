@@ -163,6 +163,14 @@ namespace OnRamp.Test
         }
 
         [Test]
+        public async Task E140_Config_NonUniqueValue()
+        {
+            var cg = await CodeGenerator.CreateAsync(new CodeGeneratorArgs("ValidEntity.yaml").AddAssembly(typeof(CodeGeneratorTest).Assembly));
+            var ex = Assert.ThrowsAsync<CodeGenException>(() => cg.GenerateAsync("Data/NonUniqueValue.yaml"));
+            Assert.AreEqual("Config 'Data/NonUniqueValue.yaml' is invalid: [Property(Name='Amount').Name] Value 'Amount' is not unique.", ex.Message);
+        }
+
+        [Test]
         public async Task F100_Generate_CreateAll()
         {
             if (Directory.Exists("F100"))

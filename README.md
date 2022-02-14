@@ -73,7 +73,7 @@ Attribute | Description
 -|-
 [`CodeGenClassAttribute`](./src/OnRamp/Config/CodeGenClassAttribute.cs) | Defines the schema/documentation details for the .NET class.
 [`CodeGenCategoryAttribute`](./src/OnRamp/Config/CodeGenCategoryAttribute.cs) | Defines one or more documentation categories for a .NET class.
-[`CodeGenPropertyAttribute`](./src/OnRamp/Config/CodeGenPropertyAttribute.cs) | Defines validation (`IsMandatory` and `Options`) and documentation for a property (non-collection).
+[`CodeGenPropertyAttribute`](./src/OnRamp/Config/CodeGenPropertyAttribute.cs) | Defines validation (`IsMandatory`, `IsUnique` and `Options`) and documentation for a property (non-collection).
 [`CodeGenPropertyCollectionAttribute`](./src/OnRamp/Config/CodeGenPropertyCollectionAttribute.cs) | Defines validation (`IsMandatory`) and documentation for a collection property.
 
 The configuration must also use the [Newtonsoft Json.NET serializer attributes](https://www.newtonsoft.com/json/help/html/SerializationAttributes.htm) as [Json.NET](https://www.newtonsoft.com/json/help) is used internally to perform all JSON deserialization.
@@ -113,7 +113,7 @@ public class PropertyConfig : ConfigBase<EntityConfig, EntityConfig>
     public override string QualifiedKeyName => BuildQualifiedKeyName("Property", Name);
 
     [JsonProperty("name")]
-    [CodeGenProperty("Key", Title = "The property name.", IsMandatory = true)]
+    [CodeGenProperty("Key", Title = "The property name.", IsMandatory = true, IsUnique = true)]
     public string? Name { get; set; }
 
     [JsonProperty("type")]

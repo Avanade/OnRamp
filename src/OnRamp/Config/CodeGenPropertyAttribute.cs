@@ -37,9 +37,14 @@ namespace OnRamp.Config
         public bool IsMandatory { get; set; }
 
         /// <summary>
-        /// Inidicates whether the property is considered important.
+        /// Indicates whether the property is considered important.
         /// </summary>
         public bool IsImportant { get; set; }
+
+        /// <summary>
+        /// Indicates whether the property is considered unique within the context of the owning collection.
+        /// </summary>
+        public bool IsUnique { get; set; }
 
         /// <summary>
         /// Gets or sets the list of option values.

@@ -79,6 +79,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Data\NonUniqueValue.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Data\MandatoryValue.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
