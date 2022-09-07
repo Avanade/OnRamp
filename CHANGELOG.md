@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.6
+- *Enhancement:* Added new `set-value` function to allow a variable to be updated from the template when executed.
+- *Enhancement:* Added new `add-value` function to allow a variable to be added to from the template when executed.
+
 ## v1.0.5
 - *Enhancement:* Changed the project to be .NET Standard 2.1 versus targeting specific framework version. This has had the side-effect of losing the ability to execute directly from the command-line. Given this should typically be inherited and then executed, this functionality loss is considered a minor inconvenience.
 

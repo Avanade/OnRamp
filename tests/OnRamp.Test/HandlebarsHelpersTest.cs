@@ -195,6 +195,34 @@ namespace OnRamp.Test
             Assert.AreEqual("12", g.Generate(new { Count = -2 }));
         }
 
+        public class SetData { public int Count { get; set; } internal bool Check { get; set; } public decimal Sum { get; set; }  }
+
+        [Test]
+        public void SetValue()
+        {
+            var sd = new SetData();
+            var g = new HandlebarsCodeGenerator("{{set-value 'Count' 88}}");
+            Assert.AreEqual("", g.Generate(sd));
+            Assert.AreEqual(88, sd.Count);
+
+            g = new HandlebarsCodeGenerator("xx{{set-value 'Check' true}}yy");
+            Assert.AreEqual("xxyy", g.Generate(sd));
+            Assert.AreEqual(true, sd.Check);
+        }
+
+        [Test]
+        public void AddValue()
+        {
+            var sd = new SetData();
+            var g = new HandlebarsCodeGenerator("{{add-value 'Sum'}}");
+            Assert.AreEqual("", g.Generate(sd));
+            Assert.AreEqual(1, sd.Sum);
+
+            g = new HandlebarsCodeGenerator("{{add-value 'Sum' 3 -3.5 '8.4'}}");
+            Assert.AreEqual("", g.Generate(sd));
+            Assert.AreEqual(8.9m, sd.Sum);
+        }
+
         [Test]
         public void Format()
         {

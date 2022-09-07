@@ -3,9 +3,11 @@
 using HandlebarsDotNet;
 using Microsoft.Extensions.Logging;
 using OnRamp.Console;
+using System;
 using System.Collections;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 
 namespace OnRamp.Utility
 {
@@ -196,6 +198,76 @@ namespace OnRamp.Utility
                 }
 
                 writer.WriteSafeString(sum);
+            });
+
+            // Sets a value to another value.
+            Handlebars.RegisterHelper("set-value", (writer, context, args) =>
+            {
+                ValidateArgs("set-value", args);
+                if (args.Length != 2)
+                    throw new CodeGenException($"Handlebars template invokes function 'set-value' which only supports two arguments.");
+
+                if (args[0] is not string name)
+                    throw new CodeGenException("Handlebars template invokes function 'set-value' where the first argument must be a string, being the property name.");
+
+                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty);
+                if (pi == null)
+                    throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
+
+                try
+                {
+                    pi.SetValue(context.Value, args[1]);
+                }
+                catch (Exception ex)
+                {
+                    throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' for Type {context.Value.GetType().Name} had a set value error: {ex.Message}");
+                }
+            });
+
+            // Adds other value(s) to a value.
+            Handlebars.RegisterHelper("add-value", (writer, context, args) =>
+            {
+                ValidateArgs("add-value", args);
+                if (args[0] is not string name)
+                    throw new CodeGenException("Handlebars template invokes function 'add-value' where the first argument must be a string, being the property name.");
+
+                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty);
+                if (pi == null)
+                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
+
+                decimal sum = 0;
+                try
+                {
+                    sum += (decimal)pi.GetValue(context.Value);
+                }
+                catch (Exception ex)
+                {
+                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' for Type {context.Value.GetType().Name} had a get value error: {ex.Message}");
+                }
+
+                if (args.Length == 1)
+                    sum++;
+                else
+                {
+                    for (int i = 1; i < args.Length; i++)
+                    {
+                        if (args[i] is int ai)
+                            sum += ai;
+                        else if (args[i] is decimal di)
+                            sum += di;
+                        else if (args[i] is string si)
+                            sum += decimal.Parse(si, CultureInfo.InvariantCulture);
+                    }
+                }
+
+                try
+                {
+                    pi.SetValue(context.Value, sum);
+                }
+                catch (Exception ex)
+                {
+                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' for Type {context.Value.GetType().Name} had a set value error: {ex.Message}");
+                }
             });
         }
 

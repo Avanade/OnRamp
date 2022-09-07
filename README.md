@@ -189,12 +189,14 @@ Function | Description
 
 #### Miscellaneous functions
 
-The following functions perform miscellanous 
+The following functions perform miscellanous operations:
 
 Function | Description
 -|-
 `indent` | Inserts indent spaces based on the passed count value.
 `add` | Adds all the arguments and writes the sum.
+`set-value` | Sets the named property value on the underlying data context. Only accepts two arguments, the first being the property name as a string, and the second being the value. Nothing is output.
+`add-value` | Adds all the arguments to the named property value on the underlying data context. Accepts at least a single argument, the first being the property name as a string. Where no further arguments are specified will add 1 by default. Nothing is output.
 
 <br/>
 
@@ -223,6 +225,7 @@ Example usage is as follows:
 {{format '{0:yyyy-MM-dd HH:mm:ss}' Order.Date}}
 {{camel Name}}
 {{log-warn 'The name {0} is not valid.' Name}}
+{{set-value 'Check' true}}
 ```
 
 <br/>
