@@ -196,6 +196,8 @@ namespace OnRamp.Utility
                     else
                         throw new CodeGenException($"Handlebars template invokes function 'add' that references value '{arg}' which is unable to be parsed as an integer.");
                 }
+
+                writer.WriteSafeString(sum);
             });
 
             // Sets a value to another value.
