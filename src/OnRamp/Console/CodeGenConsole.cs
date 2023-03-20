@@ -185,14 +185,14 @@ namespace OnRamp.Console
             }
             catch (CommandParsingException cpex)
             {
-                Args.Logger?.LogError(cpex.Message);
-                Args.Logger?.LogError(string.Empty);
+                Args.Logger?.LogError("{Content}", cpex.Message);
+                Args.Logger?.LogError("{Content}", string.Empty);
                 return 1;
             }
             catch (CodeGenException cgex)
             {
-                Args.Logger?.LogError(cgex.Message);
-                Args.Logger?.LogError(string.Empty);
+                Args.Logger?.LogError("{Content}", cgex.Message);
+                Args.Logger?.LogError("{Content}", string.Empty);
                 return 2;
             }
         }
@@ -282,16 +282,16 @@ namespace OnRamp.Console
             {
                 if (cgex.Message != null)
                 {
-                    Args.Logger?.LogError(cgex.Message);
-                    Args.Logger?.LogError(string.Empty);
+                    Args.Logger?.LogError("{Content}", cgex.Message);
+                    Args.Logger?.LogError("{Content}", string.Empty);
                 }
 
                 return 2;
             }
             catch (CodeGenChangesFoundException cgcfex)
             {
-                Args.Logger?.LogError(cgcfex.Message);
-                Args.Logger?.LogError(string.Empty);
+                Args.Logger?.LogError("{Content}", cgcfex.Message);
+                Args.Logger?.LogError("{Content}", string.Empty);
                 return 3;
             }
         }
@@ -302,7 +302,7 @@ namespace OnRamp.Console
         protected virtual void OnWriteMasthead()
         {
             if (MastheadText != null)
-                Logger?.LogInformation(MastheadText);
+                Logger?.LogInformation("{Content}", MastheadText);
         }
 
         /// <summary>
@@ -322,8 +322,8 @@ namespace OnRamp.Console
         /// <remarks>Writes the <see cref="AppTitle"/>.</remarks>
         protected virtual void OnWriteHeader()
         {
-            Logger?.LogInformation(AppTitle);
-            Logger?.LogInformation(string.Empty);
+            Logger?.LogInformation("{Content}", AppTitle);
+            Logger?.LogInformation("{Content}", string.Empty);
         }
 
         /// <summary>
@@ -341,26 +341,26 @@ namespace OnRamp.Console
             if (args == null || args.Logger == null)
                 return;
 
-            args.Logger.LogInformation($"Config = {args.ConfigFileName}");
-            args.Logger.LogInformation($"Script = {args.ScriptFileName}");
-            args.Logger.LogInformation($"OutDir = {args.OutputDirectory?.FullName}");
-            args.Logger.LogInformation($"ExpectNoChanges = {args.ExpectNoChanges}");
-            args.Logger.LogInformation($"IsSimulation = {args.IsSimulation}");
+            args.Logger.LogInformation("{Content}", $"Config = {args.ConfigFileName}");
+            args.Logger.LogInformation("{Content}", $"Script = {args.ScriptFileName}");
+            args.Logger.LogInformation("{Content}", $"OutDir = {args.OutputDirectory?.FullName}");
+            args.Logger.LogInformation("{Content}", $"ExpectNoChanges = {args.ExpectNoChanges}");
+            args.Logger.LogInformation("{Content}", $"IsSimulation = {args.IsSimulation}");
 
-            args.Logger.LogInformation($"Parameters{(args.Parameters.Count == 0 ? " = none" : ":")}");
+            args.Logger.LogInformation("{Content}", $"Parameters{(args.Parameters.Count == 0 ? " = none" : ":")}");
             foreach (var p in args.Parameters)
             {
-                args.Logger.LogInformation($"  {p.Key} = {p.Value}");
+                args.Logger.LogInformation("{Content}", $"  {p.Key} = {p.Value}");
             }
 
-            args.Logger.LogInformation($"Assemblies{(args.Assemblies.Count == 0 ? " = none" : ":")}");
+            args.Logger.LogInformation("{Content}", $"Assemblies{(args.Assemblies.Count == 0 ? " = none" : ":")}");
             foreach (var a in args.Assemblies)
             {
-                args.Logger.LogInformation($"  {a.FullName}");
+                args.Logger.LogInformation("{Content}", $"  {a.FullName}");
             }
 
-            args.Logger.LogInformation(string.Empty);
-            args.Logger.LogInformation("Scripts:");
+            args.Logger.LogInformation("{Content}", string.Empty);
+            args.Logger.LogInformation("{Content}", "Scripts:");
         }
 
         /// <summary>
@@ -369,9 +369,9 @@ namespace OnRamp.Console
         /// <param name="stats">The <see cref="CodeGenStatistics"/> information.</param>
         protected virtual void OnWriteFooter(CodeGenStatistics stats)
         {
-            Logger?.LogInformation(string.Empty);
-            Logger?.LogInformation($"{AppName} Complete. {stats.ToSummaryString()}");
-            Logger?.LogInformation(string.Empty);
+            Logger?.LogInformation("{Content}", string.Empty);
+            Logger?.LogInformation("{Content}", $"{AppName} Complete. {stats.ToSummaryString()}");
+            Logger?.LogInformation("{Content}", string.Empty);
         }
     }
 }

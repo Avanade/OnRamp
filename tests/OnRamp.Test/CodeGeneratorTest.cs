@@ -12,7 +12,7 @@ namespace OnRamp.Test
         [Test]
         public void A100_Script_DoesNotExist()
         {
-            var ex = Assert.ThrowsAsync<CodeGenException>(() => CodeGenerator.CreateAsync(new CodeGeneratorArgs("DoesNotExist.yaml").AddAssembly(typeof(CodeGeneratorTest).Assembly)));
+            var ex = Assert.ThrowsAsync<CodeGenException>(() => CodeGenerator.CreateAsync<CodeGenerator>(new CodeGeneratorArgs("DoesNotExist.yaml").AddAssembly(typeof(CodeGeneratorTest).Assembly)));
             Assert.AreEqual("Script 'DoesNotExist.yaml' does not exist.", ex.Message);
         }
 

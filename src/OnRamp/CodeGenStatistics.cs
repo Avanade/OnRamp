@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
+using OnRamp.Config;
+
 namespace OnRamp
 {
     /// <summary>
@@ -32,6 +34,11 @@ namespace OnRamp
         /// </summary>
         /// <summary>A <c>null</c> indicates that the value has not been set.</summary>
         public long? ElapsedMilliseconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="CodeGeneratorArgsBase.ConfigFileName"/> <see cref="IRootConfig"/> instance.
+        /// </summary>
+        public IRootConfig? RootConfig { get; set; }
 
         /// <summary>
         /// Adds other <paramref name="stats"/> to this instance.

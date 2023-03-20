@@ -195,6 +195,13 @@ namespace OnRamp.Test
             Assert.AreEqual("12", g.Generate(new { Count = -2 }));
         }
 
+        [Test]
+        public void Add_Index()
+        {
+            var g = new HandlebarsCodeGenerator("{{#each .}}{{.}}{{add @index 1}}{{/each}}");
+            Assert.AreEqual("a1b2", g.Generate(new System.Collections.Generic.List<string> { "a", "b" }));
+        }
+
         public class SetData { public int Count { get; set; } internal bool Check { get; set; } public decimal Sum { get; set; }  }
 
         [Test]
