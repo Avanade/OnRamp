@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.7
+- *Fixed:* `CodeGenerator` now supports inheritance as intended; new `CreateAsync<TCodeGenerator>` added to enable.
+- *Fixed:* The `CodeGeneratorArgsBase.ConfigFileName` per script `IRootConfig` instance included within `CodeGenStatistics` per script item execution to enable access from `CodeGenerator`.
+
 ## v1.0.6
 - *Enhancement:* Added new `set-value` function to allow a variable to be updated from the template when executed.
 - *Enhancement:* Added new `add-value` function to allow a variable to be added to from the template when executed.

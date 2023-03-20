@@ -27,6 +27,16 @@ namespace OnRamp
             => new CodeGenerator(args, await LoadScriptsAsync(args).ConfigureAwait(false));
 
         /// <summary>
+        /// Create a new instance of the <typeparamref name="TCodeGenerator"/> class.
+        /// </summary>
+        /// <typeparam name="TCodeGenerator">The <see cref="CodeGenerator"/> <see cref="Type"/>.</typeparam>
+        /// <param name="args">The <see cref="ICodeGeneratorArgs"/>.</param>
+        /// <returns>The <typeparamref name="TCodeGenerator"/> instance.</returns>
+        /// <remarks>The constructor must be the same as the <see cref="CodeGenerator"/>.</remarks>
+        public static async Task<TCodeGenerator> CreateAsync<TCodeGenerator>(ICodeGeneratorArgs args) where TCodeGenerator : CodeGenerator
+            => (TCodeGenerator)Activator.CreateInstance(typeof(TCodeGenerator), new object[] { args, await LoadScriptsAsync(args).ConfigureAwait(false) });
+
+        /// <summary>
         /// Load the Scripts.
         /// </summary>
         private static async Task<CodeGenScript> LoadScriptsAsync(ICodeGeneratorArgs args)
@@ -99,7 +109,10 @@ namespace OnRamp
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeGenerator"/> class.
         /// </summary>
-        private CodeGenerator(ICodeGeneratorArgs args, CodeGenScript scripts)
+        /// <param name="args">The <see cref="ICodeGeneratorArgs"/>.</param>
+        /// <param name="scripts">The <see cref="CodeGenScript"/>.</param>
+        /// <remarks>The class should only be instantiated by <see cref="CreateAsync(ICodeGeneratorArgs)"/> or <see cref="CreateAsync{TCodeGenerator}(ICodeGeneratorArgs)"/> to ensure conrrectly set up for execution.</remarks>
+        protected CodeGenerator(ICodeGeneratorArgs args, CodeGenScript scripts)
         {
             CodeGenArgs = args ?? throw new ArgumentNullException(nameof(args));
             CodeGenArgs.OutputDirectory ??= new DirectoryInfo(Environment.CurrentDirectory);
@@ -205,7 +218,7 @@ namespace OnRamp
                 rootConfig.MergeRuntimeParameters(script.RuntimeParameters);
                 rootConfig.MergeRuntimeParameters(Scripts.RuntimeParameters);
 
-                var scriptStats = new CodeGenStatistics();
+                var scriptStats = new CodeGenStatistics { RootConfig = rootConfig };
                 OnBeforeScript(script, scriptStats);
                 script.GetGenerator().Generate(script, config, (oa) => OnCodeGenerated(oa, scriptStats));
 
