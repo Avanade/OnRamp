@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v1.0.8
+- *Fixed:* Added comparison context where reporting a file update as a result of using `ExpectNoChanges`.
+
 ## v1.0.7
 - *Fixed:* `CodeGenerator` now supports inheritance as intended; new `CreateAsync<TCodeGenerator>` added to enable.
 - *Fixed:* The `CodeGeneratorArgsBase.ConfigFileName` per script `IRootConfig` instance included within `CodeGenStatistics` per script item execution to enable access from `CodeGenerator`.

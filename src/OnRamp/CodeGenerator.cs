@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace OnRamp
@@ -272,16 +273,20 @@ namespace OnRamp
                 }
             }
 
+            // Convert content into lines.
+            var lines = ConvertContentIntoLines(outputArgs.Content);
+            statistics.LinesOfCodeCount += lines.Length;
+
             // Create or override.
             if (fi.Exists)
             {
-                var prevContent = File.ReadAllText(fi.FullName);
-                if (string.Compare(outputArgs.Content, prevContent, StringComparison.InvariantCulture) == 0)
+                var diff = CompareLines(File.ReadAllLines(fi.FullName), lines);
+                if (diff is null)
                     statistics.NotChangedCount++;
                 else
                 {
                     if (Scripts!.CodeGenArgs!.ExpectNoChanges)
-                        throw new CodeGenChangesFoundException($"File '{fi.FullName}' would be updated as a result of the code generation.");
+                        throw new CodeGenChangesFoundException($"File '{fi.FullName}' would be updated as a result of the code generation:{Environment.NewLine}{diff}");
 
                     if (!Scripts!.CodeGenArgs!.IsSimulation)
                         File.WriteAllText(fi.FullName, outputArgs.Content);
@@ -301,12 +306,47 @@ namespace OnRamp
                 statistics.CreatedCount++;
                 outputArgs.Script.Root?.CodeGenArgs?.Logger?.LogWarning("    Created -> {fileName}", fi.FullName);
             }
+        }
 
-            if (outputArgs.Content != null)
+        /// <summary>
+        /// Converts the content into lines.
+        /// </summary>
+        private static string[] ConvertContentIntoLines(string? content)
+        {
+            if (content is null)
+                return Array.Empty<string>();
+
+            string line;
+            var lines = new List<string>();
+            using var sr = new StringReader(content);
+            while ((line = sr.ReadLine()) is not null)
             {
-                using var s = new StringReader(outputArgs.Content);
-                for (; s.ReadLine() != null; statistics.LinesOfCodeCount++) { }
+                lines.Add(line);
             }
+
+            return lines.ToArray();
+        }
+
+        /// <summary>
+        /// Compare the existing lines with the new lines and return initial differences.
+        /// </summary>
+        private static string? CompareLines(string[] previousLines, string[] newLines)
+        {
+            var sb = new StringBuilder();
+            if (previousLines.Length != newLines.Length)
+                sb.AppendLine($"> Line count difference; previous '{previousLines.Length}' versus generated '{newLines.Length}'.");
+
+            for (int i = 0; i < Math.Min(previousLines.Length, newLines.Length); i ++)
+            {
+                if (string.Compare(previousLines[i], newLines[i], StringComparison.InvariantCulture) != 0)
+                {
+                    sb.AppendLine($"> Line '{i + 1}' content difference (no further lines compared);");
+                    sb.AppendLine($">  previous--> {previousLines[i]}");
+                    sb.AppendLine($">  generated-> {newLines[i]}");
+                }
+            }
+
+            return sb.Length > 0 ? sb.ToString() : null;
         }
 
         /// <summary>

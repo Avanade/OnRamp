@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace OnRamp.Test
 {
@@ -144,8 +145,25 @@ namespace OnRamp.Test
             if (Directory.Exists("XA400"))
                 Directory.Delete("XA400", true);
 
+            // Run and it should fail as it cannot create.
             var c = new CodeGenConsole();
             var r = await c.RunAsync("-s ValidEntity.yaml -c Data/ValidEntity.yaml -enc -p Directory=XA400 -p AppName=Zzz -a \"OnRamp.Test, Version=1.2.3.0, Culture=neutral, PublicKeyToken=null\"");
+            Assert.AreEqual(3, r);
+
+            // Run again and let it make changes.
+            c = new CodeGenConsole();
+            r = await c.RunAsync("-s ValidEntity.yaml -c Data/ValidEntity.yaml -p Directory=XA400 -p AppName=Zzz -a \"OnRamp.Test, Version=1.2.3.0, Culture=neutral, PublicKeyToken=null\"");
+            Assert.AreEqual(0, r);
+
+            // Change the file and run again and it should fail as it cannot update.
+            var files = Directory.GetFiles("XA400");
+            Assert.AreNotEqual(0, files.Length);
+
+            var content = File.ReadAllText(files.Last());
+            File.WriteAllText(files.Last(), content + "X");
+
+            c = new CodeGenConsole();
+            r = await c.RunAsync("-s ValidEntity.yaml -c Data/ValidEntity.yaml -enc -p Directory=XA400 -p AppName=Zzz -a \"OnRamp.Test, Version=1.2.3.0, Culture=neutral, PublicKeyToken=null\"");
             Assert.AreEqual(3, r);
         }
 
