@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OnRamp.Config;
 using OnRamp.Test.Config;
-using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 namespace OnRamp.Test
 {
@@ -15,16 +15,16 @@ namespace OnRamp.Test
             bool val1 = true;
             bool? val2 = true;
 
-            Assert.IsTrue(ConfigBase.IsTrue(val1));
-            Assert.IsTrue(ConfigBase.IsTrue(val2));
+            Assert.That(ConfigBase.IsTrue(val1), Is.True);
+            Assert.That(ConfigBase.IsTrue(val2), Is.True);
 
             val1 = false;
             val2 = false;
-            Assert.IsFalse(ConfigBase.IsTrue(val1));
-            Assert.IsFalse(ConfigBase.IsTrue(val2));
+            Assert.That(ConfigBase.IsTrue(val1), Is.False);
+            Assert.That(ConfigBase.IsTrue(val2), Is.False);
 
             val2 = null;
-            Assert.IsFalse(ConfigBase.IsTrue(val2));
+            Assert.That(ConfigBase.IsTrue(val2), Is.False);
         }
 
         [Test]
@@ -33,84 +33,89 @@ namespace OnRamp.Test
             bool val1 = true;
             bool? val2 = true;
 
-            Assert.IsFalse(ConfigBase.IsFalse(val1));
-            Assert.IsFalse(ConfigBase.IsFalse(val2));
+            Assert.That(ConfigBase.IsFalse(val1), Is.False);
+            Assert.That(ConfigBase.IsFalse(val2), Is.False);
 
             val1 = false;
             val2 = false;
-            Assert.IsTrue(ConfigBase.IsFalse(val1));
-            Assert.IsTrue(ConfigBase.IsFalse(val2));
+            Assert.That(ConfigBase.IsFalse(val1), Is.True);
+            Assert.That(ConfigBase.IsFalse(val2), Is.True);
 
             val2 = null;
-            Assert.IsTrue(ConfigBase.IsFalse(val2));
+            Assert.That(ConfigBase.IsFalse(val2), Is.True);
         }
 
         [Test]
         public void DefaultWhereNull_String()
         {
-            Assert.AreEqual("ABC", ConfigBase.DefaultWhereNull("ABC", () => "DEF"));
-            Assert.AreEqual("", ConfigBase.DefaultWhereNull("", () => "DEF"));
-            Assert.AreEqual("DEF", ConfigBase.DefaultWhereNull(null, () => "DEF"));
+            Assert.That(ConfigBase.DefaultWhereNull("ABC", () => "DEF"), Is.EqualTo("ABC"));
+            Assert.That(ConfigBase.DefaultWhereNull("", () => "DEF"), Is.EqualTo(""));
+            Assert.That(ConfigBase.DefaultWhereNull(null, () => "DEF"), Is.EqualTo("DEF"));
         }
 
         [Test]
         public void DefaultWhereNull_Bool()
         {
-            Assert.IsTrue(ConfigBase.DefaultWhereNull(true, () => false));
-            Assert.IsFalse(ConfigBase.DefaultWhereNull(false, () => true));
-            Assert.IsTrue(ConfigBase.DefaultWhereNull(null, () => true));
+            Assert.That(ConfigBase.DefaultWhereNull(true, () => false), Is.True);
+            Assert.That(ConfigBase.DefaultWhereNull(false, () => true), Is.False);
+            Assert.That(ConfigBase.DefaultWhereNull(null, () => true), Is.True);
         }
 
         [Test]
         public void CompareValue_String()
         {
-            Assert.IsTrue(ConfigBase.CompareValue("ABC", "ABC"));
-            Assert.IsFalse(ConfigBase.CompareValue("ABC", "DEF"));
-            Assert.IsFalse(ConfigBase.CompareValue(null, "DEF"));
+            Assert.That(ConfigBase.CompareValue("ABC", "ABC"), Is.True);
+            Assert.That(ConfigBase.CompareValue("ABC", "DEF"), Is.False);
+            Assert.That(ConfigBase.CompareValue(null, "DEF"), Is.False);
         }
 
         [Test]
         public void CompareValue_Bool()
         {
-            Assert.IsTrue(ConfigBase.CompareValue(true, true));
-            Assert.IsFalse(ConfigBase.CompareValue(true, false));
-            Assert.IsFalse(ConfigBase.CompareValue(null, true));
+            Assert.That(ConfigBase.CompareValue(true, true), Is.True);
+            Assert.That(ConfigBase.CompareValue(true, false), Is.False);
+            Assert.That(ConfigBase.CompareValue(null, true), Is.False);
         }
 
         [Test]
         public void CompareNullOrValue_String()
         {
-            Assert.IsTrue(ConfigBase.CompareNullOrValue("ABC", "ABC"));
-            Assert.IsFalse(ConfigBase.CompareNullOrValue("ABC", "DEF"));
-            Assert.IsTrue(ConfigBase.CompareNullOrValue(null, "DEF"));
+            Assert.That(ConfigBase.CompareNullOrValue("ABC", "ABC"), Is.True);
+            Assert.That(ConfigBase.CompareNullOrValue("ABC", "DEF"), Is.False);
+            Assert.That(ConfigBase.CompareNullOrValue(null, "DEF"), Is.True);
         }
 
         [Test]
         public void CompareNullOrValue_Bool()
         {
-            Assert.IsTrue(ConfigBase.CompareNullOrValue(true, true));
-            Assert.IsFalse(ConfigBase.CompareNullOrValue(true, false));
-            Assert.IsTrue(ConfigBase.CompareNullOrValue(null, true));
+            Assert.That(ConfigBase.CompareNullOrValue(true, true), Is.True);
+            Assert.That(ConfigBase.CompareNullOrValue(true, false), Is.False);
+            Assert.That(ConfigBase.CompareNullOrValue(null, true), Is.True);
         }
 
         [Test]
         public void ExtraProperties()
         {
-            var ec = new EntityConfig { ExtraProperties = new Dictionary<string, JToken> { { "XXX", new JValue("AAA") } } };
+            var ec = (EntityConfig)Utility.JsonSerializer.Deserialize("{ \"name\": \"Bob\", \"XXX\": \"AAA\", \"YYY\": { \"BBB\": \"CCC\" } }", typeof(EntityConfig));
 
-            JValue jv = ec.GetExtraProperty<JValue>("XXX");
-            Assert.AreEqual("AAA", jv.ToObject(typeof(string)));
+            Assert.That(ec.ExtraProperties.Count, Is.EqualTo(2));
+            Assert.That(ec.GetExtraProperty<string>("XXX"), Is.EqualTo("AAA"));
+            Assert.That(ec.GetExtraProperty<string>("JJJ", "CCC"), Is.EqualTo("CCC"));
 
-            jv = ec.GetExtraProperty("YYY", new JValue("BBB"));
-            Assert.AreEqual("BBB", jv.ToObject(typeof(string)));
+            Assert.That(ec.TryGetExtraProperty<string>("XXX", out var val), Is.True);
+            Assert.That(val, Is.EqualTo("AAA"));
 
-            Assert.IsNull(ec.GetExtraProperty<JValue>("YYY"));
+            Assert.That(ec.TryGetExtraProperty<string>("JJJ", out val), Is.False);
+            Assert.That(val, Is.Null);
 
-            Assert.IsTrue(ec.TryGetExtraProperty("XXX", out jv));
-            Assert.AreEqual("AAA", jv.ToObject(typeof(string)));
+            Assert.That(ec.TryGetExtraProperty<YYY>("YYY", out var bval), Is.True);
+            Assert.That(bval, Is.Not.Null);
+            Assert.That(bval.BBB, Is.EqualTo("CCC"));
+        }
 
-            Assert.IsFalse(ec.TryGetExtraProperty("YYY", out jv));
-            Assert.IsNull(jv);
+        private class YYY
+        {
+            public string BBB { get; set; }
         }
 
         [Test]
@@ -120,18 +125,18 @@ namespace OnRamp.Test
             ec.CustomProperties.Add("XXX", "AAA");
 
             string sv = ec.GetCustomProperty<string>("XXX");
-            Assert.AreEqual("AAA", sv);
+            Assert.That(sv, Is.EqualTo("AAA"));
 
             sv = ec.GetCustomProperty("YYY", "BBB");
-            Assert.AreEqual("BBB", sv);
+            Assert.That(sv, Is.EqualTo("BBB"));
 
-            Assert.IsNull(ec.GetCustomProperty<string>("YYY"));
+            Assert.That(ec.GetCustomProperty<string>("YYY"), Is.Null);
 
-            Assert.IsTrue(ec.TryGetCustomProperty("XXX", out sv));
-            Assert.AreEqual("AAA", sv);
+            Assert.That(ec.TryGetCustomProperty("XXX", out sv), Is.True);
+            Assert.That(sv, Is.EqualTo("AAA"));
 
-            Assert.IsFalse(ec.TryGetCustomProperty("YYY", out sv));
-            Assert.IsNull(sv);
+            Assert.That(ec.TryGetCustomProperty("YYY", out sv), Is.False);
+            Assert.That(sv, Is.Null);
         }
     }
 }

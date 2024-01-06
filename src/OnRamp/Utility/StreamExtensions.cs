@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
+using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
 namespace OnRamp.Utility
@@ -26,7 +27,7 @@ namespace OnRamp.Utility
         /// <param name="json">The JSON <see cref="TextReader"/>.</param>
         /// <param name="type">The value <see cref="Type"/>.</param>
         /// <returns>The corresponding value.</returns>
-        public static object? DeserializeJson(this TextReader json, Type type) => JsonSerializer.Create().Deserialize(json ?? throw new ArgumentNullException(nameof(json)), type);
+        public static object? DeserializeJson(this TextReader json, Type type) => JsonSerializer.Deserialize(json ?? throw new ArgumentNullException(nameof(json)), type);
 
         /// <summary>
         /// Create an instance of <typeparamref name="T"/> from the <paramref name="yaml"/> <see cref="TextReader"/>.
@@ -44,7 +45,7 @@ namespace OnRamp.Utility
         /// <returns>The corresponding value.</returns>
         public static object? DeserializeYaml(this TextReader yaml, Type type)
         {
-            var yml = new DeserializerBuilder().Build().Deserialize(yaml);
+            var yml = new DeserializerBuilder().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
 
 #pragma warning disable IDE0063 // Use simple 'using' statement; cannot as need to be more explicit with managing the close and dispose.
             using (var ms = new MemoryStream())
@@ -60,6 +61,36 @@ namespace OnRamp.Utility
                 }
             }
 #pragma warning restore IDE0063        
+        }
+
+        private class YamlNodeTypeResolver : INodeTypeResolver
+        {
+            private static readonly string[] boolValues = { "true", "false" };
+
+            /// <inheritdoc/>
+            bool INodeTypeResolver.Resolve(NodeEvent? nodeEvent, ref Type currentType)
+            {
+                if (nodeEvent is Scalar scalar && scalar.Style == YamlDotNet.Core.ScalarStyle.Plain)
+                {
+                    if (decimal.TryParse(scalar.Value, out _))
+                    {
+                        if (scalar.Value.Length > 1 && scalar.Value.StartsWith('0')) // Valid JSON does not support a number that starts with a zero.
+                            currentType = typeof(string);
+                        else
+                            currentType = typeof(decimal);
+
+                        return true;
+                    }
+
+                    if (boolValues.Contains(scalar.Value))
+                    {
+                        currentType = typeof(bool);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
     }
 }

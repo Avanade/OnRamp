@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using Newtonsoft.Json;
 using OnRamp.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace OnRamp.Utility
 {
@@ -49,7 +49,7 @@ namespace OnRamp.Utility
             var pdlist = new List<MarkdownDocumentationGeneratorPropertyData>();
             foreach (var pi in type.GetProperties())
             {
-                var jpa = pi.GetCustomAttribute<JsonPropertyAttribute>();
+                var jpa = pi.GetCustomAttribute<JsonPropertyNameAttribute>();
                 if (jpa == null)
                     continue;
 
@@ -57,7 +57,7 @@ namespace OnRamp.Utility
                 {
                     Type = type,
                     Class = csa,
-                    Name = jpa.PropertyName ?? StringConverter.ToCamelCase(pi.Name),
+                    Name = jpa.Name ?? StringConverter.ToCamelCase(pi.Name),
                     Property = pi,
                     Psa = pi.GetCustomAttribute<CodeGenPropertyAttribute>()
                 };

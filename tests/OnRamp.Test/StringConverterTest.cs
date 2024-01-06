@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OnRamp.Utility;
 
 namespace OnRamp.Test
@@ -9,124 +10,124 @@ namespace OnRamp.Test
         [Test]
         public void ToCamelCase()
         {
-            Assert.AreEqual("fieldName", StringConverter.ToCamelCase("FieldName"));
-            Assert.AreEqual("etagName", StringConverter.ToCamelCase("ETagName"));
-            Assert.AreEqual("odataName", StringConverter.ToCamelCase("ODataName"));
+            ClassicAssert.AreEqual("fieldName", StringConverter.ToCamelCase("FieldName"));
+            ClassicAssert.AreEqual("etagName", StringConverter.ToCamelCase("ETagName"));
+            ClassicAssert.AreEqual("odataName", StringConverter.ToCamelCase("ODataName"));
 
-            Assert.AreEqual("fieldName", StringConverter.ToCamelCase("FieldName", true));
-            Assert.AreEqual("eTagName", StringConverter.ToCamelCase("ETagName", true));
-            Assert.AreEqual("oDataName", StringConverter.ToCamelCase("ODataName", true));
+            ClassicAssert.AreEqual("fieldName", StringConverter.ToCamelCase("FieldName", true));
+            ClassicAssert.AreEqual("eTagName", StringConverter.ToCamelCase("ETagName", true));
+            ClassicAssert.AreEqual("oDataName", StringConverter.ToCamelCase("ODataName", true));
         }
 
         [Test]
         public void ToPascalCase()
         {
-            Assert.AreEqual("FieldName", StringConverter.ToPascalCase("fieldName"));
-            Assert.AreEqual("ETagName", StringConverter.ToPascalCase("etagName"));
-            Assert.AreEqual("ODataName", StringConverter.ToPascalCase("odataName"));
+            ClassicAssert.AreEqual("FieldName", StringConverter.ToPascalCase("fieldName"));
+            ClassicAssert.AreEqual("ETagName", StringConverter.ToPascalCase("etagName"));
+            ClassicAssert.AreEqual("ODataName", StringConverter.ToPascalCase("odataName"));
 
-            Assert.AreEqual("FieldName", StringConverter.ToPascalCase("fieldName", true));
-            Assert.AreEqual("EtagName", StringConverter.ToPascalCase("etagName", true));
-            Assert.AreEqual("OdataName", StringConverter.ToPascalCase("odataName", true));
+            ClassicAssert.AreEqual("FieldName", StringConverter.ToPascalCase("fieldName", true));
+            ClassicAssert.AreEqual("EtagName", StringConverter.ToPascalCase("etagName", true));
+            ClassicAssert.AreEqual("OdataName", StringConverter.ToPascalCase("odataName", true));
         }
 
         [Test]
         public void ToPrivateCase()
         {
-            Assert.AreEqual("_fieldName", StringConverter.ToPrivateCase("FieldName"));
-            Assert.AreEqual("_etagName", StringConverter.ToPrivateCase("ETagName"));
-            Assert.AreEqual("_odataName", StringConverter.ToPrivateCase("ODataName"));
+            ClassicAssert.AreEqual("_fieldName", StringConverter.ToPrivateCase("FieldName"));
+            ClassicAssert.AreEqual("_etagName", StringConverter.ToPrivateCase("ETagName"));
+            ClassicAssert.AreEqual("_odataName", StringConverter.ToPrivateCase("ODataName"));
 
-            Assert.AreEqual("_fieldName", StringConverter.ToPrivateCase("FieldName", true));
-            Assert.AreEqual("_eTagName", StringConverter.ToPrivateCase("ETagName", true));
-            Assert.AreEqual("_oDataName", StringConverter.ToPrivateCase("ODataName", true));
+            ClassicAssert.AreEqual("_fieldName", StringConverter.ToPrivateCase("FieldName", true));
+            ClassicAssert.AreEqual("_eTagName", StringConverter.ToPrivateCase("ETagName", true));
+            ClassicAssert.AreEqual("_oDataName", StringConverter.ToPrivateCase("ODataName", true));
         }
 
         [Test]
         public void ToSentenceCase()
         {
-            Assert.AreEqual("Field Name", StringConverter.ToSentenceCase("FieldName"));
-            Assert.AreEqual("ETag Name", StringConverter.ToSentenceCase("ETagName"));
-            Assert.AreEqual("OData Name", StringConverter.ToSentenceCase("ODataName"));
-            Assert.AreEqual("XML Name", StringConverter.ToSentenceCase("XMLName"));
+            ClassicAssert.AreEqual("Field Name", StringConverter.ToSentenceCase("FieldName"));
+            ClassicAssert.AreEqual("ETag Name", StringConverter.ToSentenceCase("ETagName"));
+            ClassicAssert.AreEqual("OData Name", StringConverter.ToSentenceCase("ODataName"));
+            ClassicAssert.AreEqual("XML Name", StringConverter.ToSentenceCase("XMLName"));
 
-            Assert.AreEqual("Field Name", StringConverter.ToSentenceCase("FieldName", true));
-            Assert.AreEqual("E Tag Name", StringConverter.ToSentenceCase("ETagName", true));
-            Assert.AreEqual("O Data Name", StringConverter.ToSentenceCase("ODataName", true));
-            Assert.AreEqual("XML Name OR Other", StringConverter.ToSentenceCase("XMLNameOROther", true));
+            ClassicAssert.AreEqual("Field Name", StringConverter.ToSentenceCase("FieldName", true));
+            ClassicAssert.AreEqual("E Tag Name", StringConverter.ToSentenceCase("ETagName", true));
+            ClassicAssert.AreEqual("O Data Name", StringConverter.ToSentenceCase("ODataName", true));
+            ClassicAssert.AreEqual("XML Name OR Other", StringConverter.ToSentenceCase("XMLNameOROther", true));
         }
 
         [Test]
         public void ToKebabCase()
         {
-            Assert.AreEqual("field-name", StringConverter.ToKebabCase("FieldName"));
-            Assert.AreEqual("etag-name", StringConverter.ToKebabCase("ETagName"));
-            Assert.AreEqual("odata-name", StringConverter.ToKebabCase("ODataName"));
-            Assert.AreEqual("xml-name", StringConverter.ToKebabCase("XMLName"));
+            ClassicAssert.AreEqual("field-name", StringConverter.ToKebabCase("FieldName"));
+            ClassicAssert.AreEqual("etag-name", StringConverter.ToKebabCase("ETagName"));
+            ClassicAssert.AreEqual("odata-name", StringConverter.ToKebabCase("ODataName"));
+            ClassicAssert.AreEqual("xml-name", StringConverter.ToKebabCase("XMLName"));
 
-            Assert.AreEqual("field-name", StringConverter.ToKebabCase("FieldName", true));
-            Assert.AreEqual("e-tag-name", StringConverter.ToKebabCase("ETagName", true));
-            Assert.AreEqual("o-data-name", StringConverter.ToKebabCase("ODataName", true));
-            Assert.AreEqual("xml-name", StringConverter.ToKebabCase("XMLName", true));
+            ClassicAssert.AreEqual("field-name", StringConverter.ToKebabCase("FieldName", true));
+            ClassicAssert.AreEqual("e-tag-name", StringConverter.ToKebabCase("ETagName", true));
+            ClassicAssert.AreEqual("o-data-name", StringConverter.ToKebabCase("ODataName", true));
+            ClassicAssert.AreEqual("xml-name", StringConverter.ToKebabCase("XMLName", true));
         }
 
         [Test]
         public void ToSnakeCase()
         {
-            Assert.AreEqual("field_name", StringConverter.ToSnakeCase("FieldName"));
-            Assert.AreEqual("etag_name", StringConverter.ToSnakeCase("ETagName"));
-            Assert.AreEqual("odata_name", StringConverter.ToSnakeCase("ODataName"));
-            Assert.AreEqual("xml_name", StringConverter.ToSnakeCase("XMLName"));
+            ClassicAssert.AreEqual("field_name", StringConverter.ToSnakeCase("FieldName"));
+            ClassicAssert.AreEqual("etag_name", StringConverter.ToSnakeCase("ETagName"));
+            ClassicAssert.AreEqual("odata_name", StringConverter.ToSnakeCase("ODataName"));
+            ClassicAssert.AreEqual("xml_name", StringConverter.ToSnakeCase("XMLName"));
 
-            Assert.AreEqual("field_name", StringConverter.ToSnakeCase("FieldName", true));
-            Assert.AreEqual("e_tag_name", StringConverter.ToSnakeCase("ETagName", true));
-            Assert.AreEqual("o_data_name", StringConverter.ToSnakeCase("ODataName", true));
-            Assert.AreEqual("xml_name", StringConverter.ToSnakeCase("XMLName", true));
+            ClassicAssert.AreEqual("field_name", StringConverter.ToSnakeCase("FieldName", true));
+            ClassicAssert.AreEqual("e_tag_name", StringConverter.ToSnakeCase("ETagName", true));
+            ClassicAssert.AreEqual("o_data_name", StringConverter.ToSnakeCase("ODataName", true));
+            ClassicAssert.AreEqual("xml_name", StringConverter.ToSnakeCase("XMLName", true));
         }
 
         [Test]
         public void ToPastTense()
         {
-            Assert.AreEqual("A", StringConverter.ToPastTense("A"));
-            Assert.AreEqual("Be", StringConverter.ToPastTense("Be"));
-            Assert.AreEqual("Pried", StringConverter.ToPastTense("Pry"));
-            Assert.AreEqual("Applied", StringConverter.ToPastTense("Apply"));
-            Assert.AreEqual("Dropped", StringConverter.ToPastTense("Drop"));
-            Assert.AreEqual("Rotted", StringConverter.ToPastTense("Rot"));
-            Assert.AreEqual("Concurred", StringConverter.ToPastTense("Concur"));
-            Assert.AreEqual("Ordered", StringConverter.ToPastTense("Order"));
-            Assert.AreEqual("Sent", StringConverter.ToPastTense("Send"));
-            Assert.AreEqual("sent", StringConverter.ToPastTense("send"));
-            Assert.AreEqual("Frolicked", StringConverter.ToPastTense("Frolic"));
-            Assert.AreEqual("Picnicked", StringConverter.ToPastTense("Picnic"));
+            ClassicAssert.AreEqual("A", StringConverter.ToPastTense("A"));
+            ClassicAssert.AreEqual("Be", StringConverter.ToPastTense("Be"));
+            ClassicAssert.AreEqual("Pried", StringConverter.ToPastTense("Pry"));
+            ClassicAssert.AreEqual("Applied", StringConverter.ToPastTense("Apply"));
+            ClassicAssert.AreEqual("Dropped", StringConverter.ToPastTense("Drop"));
+            ClassicAssert.AreEqual("Rotted", StringConverter.ToPastTense("Rot"));
+            ClassicAssert.AreEqual("Concurred", StringConverter.ToPastTense("Concur"));
+            ClassicAssert.AreEqual("Ordered", StringConverter.ToPastTense("Order"));
+            ClassicAssert.AreEqual("Sent", StringConverter.ToPastTense("Send"));
+            ClassicAssert.AreEqual("sent", StringConverter.ToPastTense("send"));
+            ClassicAssert.AreEqual("Frolicked", StringConverter.ToPastTense("Frolic"));
+            ClassicAssert.AreEqual("Picnicked", StringConverter.ToPastTense("Picnic"));
         }
 
         [Test]
         public void ToPlural()
         {
-            Assert.AreEqual("Castles", StringConverter.ToPlural("Castle"));
-            Assert.AreEqual("Successes", StringConverter.ToPlural("Success"));
+            ClassicAssert.AreEqual("Castles", StringConverter.ToPlural("Castle"));
+            ClassicAssert.AreEqual("Successes", StringConverter.ToPlural("Success"));
         }
 
         [Test]
         public void ToSingle()
         {
-            Assert.AreEqual("Castle", StringConverter.ToSingle("Castles"));
-            Assert.AreEqual("Success", StringConverter.ToSingle("Successes"));
+            ClassicAssert.AreEqual("Castle", StringConverter.ToSingle("Castles"));
+            ClassicAssert.AreEqual("Success", StringConverter.ToSingle("Successes"));
         }
 
         [Test]
         public void ToComments()
         {
-            Assert.AreEqual("See <see cref=\"Xyz\"/>.", StringConverter.ToComments("See {{Xyz}}."));
-            Assert.AreEqual("See <see cref=\"List{Xyz}\"/>.", StringConverter.ToComments("See {{List<Xyz>}}."));
+            ClassicAssert.AreEqual("See <see cref=\"Xyz\"/>.", StringConverter.ToComments("See {{Xyz}}."));
+            ClassicAssert.AreEqual("See <see cref=\"List{Xyz}\"/>.", StringConverter.ToComments("See {{List<Xyz>}}."));
         }
 
         [Test]
         public void ToSeeComments()
         {
-            Assert.AreEqual("<see cref=\"Xyz\"/>", StringConverter.ToSeeComments("Xyz"));
-            Assert.AreEqual("<see cref=\"List{Xyz}\"/>", StringConverter.ToSeeComments("List<Xyz>"));
+            ClassicAssert.AreEqual("<see cref=\"Xyz\"/>", StringConverter.ToSeeComments("Xyz"));
+            ClassicAssert.AreEqual("<see cref=\"List{Xyz}\"/>", StringConverter.ToSeeComments("List<Xyz>"));
         }
     }
 }

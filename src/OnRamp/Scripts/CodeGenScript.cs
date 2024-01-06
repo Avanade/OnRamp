@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using Newtonsoft.Json;
 using OnRamp.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OnRamp.Scripts
@@ -12,7 +12,6 @@ namespace OnRamp.Scripts
     /// <summary>
     /// Represents the root that encapsulates the underlying <see cref="Generators"/>.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("Script", Title = "'Script' object.", Description = "The `Script` object scripts the code-generation execution.")]
     [CodeGenCategory("Key", Title = "Provides the _Key_ configuration.")]
     [CodeGenCategory("Collections", Title = "Provides related child (hierarchical) configuration.")]
@@ -24,28 +23,28 @@ namespace OnRamp.Scripts
         /// <summary>
         /// Gets or sets the .NET <see cref="ConfigRootBase{TRoot}"/> Type for the underlying <see cref="Generators"/>.
         /// </summary>
-        [JsonProperty("configType")]
+        [JsonPropertyName("configType")]
         [CodeGenProperty("Key", Title = "The .NET ConfigRootBase Type for the underlying 'Generators'.", IsMandatory = true)]
         public string? ConfigType { get; set; }
 
         /// <summary>
         /// Gets or sets the list of additional script resource names to inherit.
         /// </summary>
-        [JsonProperty("inherits")]
+        [JsonPropertyName("inherits")]
         [CodeGenPropertyCollection("Key", Title = "The list of additional script resource names to inherit.")]
         public List<string>? Inherits { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IConfigEditor"/> <see cref="Type"/>.
         /// </summary>
-        [JsonProperty("editorType")]
+        [JsonPropertyName("editorType")]
         [CodeGenPropertyCollection("Key", Title = "The .NET IConfigEditor Type for performing extended custom configuration prior to generation.")]
         public string? EditorType { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="CodeGenScriptItem"/> collection.
         /// </summary>
-        [JsonProperty("generators")]
+        [JsonPropertyName("generators")]
         [CodeGenPropertyCollection("Collections", Title = "The corresponding `Generator` collection.")]
         public List<CodeGenScriptItem>? Generators { get; set; }
 

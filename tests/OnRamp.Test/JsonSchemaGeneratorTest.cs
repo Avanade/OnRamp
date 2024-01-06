@@ -19,8 +19,8 @@ namespace OnRamp.Test
 
             JsonSchemaGenerator.Generate<EntityConfig>(fn, "Entity Configuration");
 
-            Assert.IsTrue(File.Exists(fn));
-            Assert.AreEqual(File.ReadAllText(Path.Combine("Expected", "Schema.json")), File.ReadAllText(fn));
+            Assert.That(File.Exists(fn), Is.True);
+            Assert.That(File.ReadAllText(fn), Is.EqualTo(File.ReadAllText(Path.Combine("Expected", "Schema.json"))));
         }
     }
 }
