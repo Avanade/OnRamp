@@ -4,8 +4,8 @@
   "definitions": {
     "Entity": {
       "type": "object",
-      "title": "'Entity' object.",
-      "description": "The 'Entity' object.",
+      "title": "\u0027Entity\u0027 object.",
+      "description": "The \u0060Entity\u0060 object.",
       "properties": {
         "name": {
           "type": "string",
@@ -13,7 +13,7 @@
         },
         "properties": {
           "type": "array",
-          "title": "The 'Property' collection.",
+          "title": "The \u0060Property\u0060 collection.",
           "items": {
             "$ref": "#/definitions/Property"
           }
@@ -25,8 +25,8 @@
     },
     "Property": {
       "type": "object",
-      "title": "'Property' object.",
-      "description": "The 'Property' object.",
+      "title": "\u0027Property\u0027 object.",
+      "description": "The \u0060Property\u0060 object.",
       "properties": {
         "name": {
           "type": "string",

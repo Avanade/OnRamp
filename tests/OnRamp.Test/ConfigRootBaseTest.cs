@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using OnRamp.Test.Config;
 using System;
 using System.Collections.Generic;
@@ -15,29 +16,29 @@ namespace OnRamp.Test
             var ec = new EntityConfig();
             ec.RuntimeParameters.Add("XXX", "123");
 
-            Assert.AreEqual("123", ec.GetRuntimeParameter("XXX", "456"));
-            Assert.AreEqual(123, ec.GetRuntimeParameter("XXX", 456));
-            Assert.AreEqual("456", ec.GetRuntimeParameter("YYY", "456"));
-            Assert.AreEqual(456, ec.GetRuntimeParameter("YYY", 456));
+            ClassicAssert.AreEqual("123", ec.GetRuntimeParameter("XXX", "456"));
+            ClassicAssert.AreEqual(123, ec.GetRuntimeParameter("XXX", 456));
+            ClassicAssert.AreEqual("456", ec.GetRuntimeParameter("YYY", "456"));
+            ClassicAssert.AreEqual(456, ec.GetRuntimeParameter("YYY", 456));
 
-            Assert.IsTrue(ec.TryGetRuntimeParameter("XXX", out string sv));
-            Assert.AreEqual("123", sv);
+            ClassicAssert.IsTrue(ec.TryGetRuntimeParameter("XXX", out string sv));
+            ClassicAssert.AreEqual("123", sv);
 
-            Assert.IsFalse(ec.TryGetRuntimeParameter("YYY", out sv));
-            Assert.IsNull(sv);
+            ClassicAssert.IsFalse(ec.TryGetRuntimeParameter("YYY", out sv));
+            ClassicAssert.IsNull(sv);
 
-            Assert.IsTrue(ec.TryGetRuntimeParameter("XXX", out int iv));
-            Assert.AreEqual(123, iv);
+            ClassicAssert.IsTrue(ec.TryGetRuntimeParameter("XXX", out int iv));
+            ClassicAssert.AreEqual(123, iv);
 
-            Assert.IsFalse(ec.TryGetRuntimeParameter("YYY", out iv));
-            Assert.AreEqual(0, iv);
+            ClassicAssert.IsFalse(ec.TryGetRuntimeParameter("YYY", out iv));
+            ClassicAssert.AreEqual(0, iv);
 
-            Assert.IsFalse(ec.TryGetRuntimeParameter("YYY", out int? nv));
-            Assert.IsNull(nv);
+            ClassicAssert.IsFalse(ec.TryGetRuntimeParameter("YYY", out int? nv));
+            ClassicAssert.IsNull(nv);
 
             ec.ResetRuntimeParameters();
-            Assert.AreEqual(0, ec.RuntimeParameters.Count);
-            Assert.AreEqual("456", ec.GetRuntimeParameter("XXX", "456"));
+            ClassicAssert.AreEqual(0, ec.RuntimeParameters.Count);
+            ClassicAssert.AreEqual("456", ec.GetRuntimeParameter("XXX", "456"));
         }
 
         [Test]
@@ -54,10 +55,10 @@ namespace OnRamp.Test
             ec.RuntimeParameters.Add("ZZZ", "ABC");
 
             ec.MergeRuntimeParameters(rp);
-            Assert.AreEqual(3, ec.RuntimeParameters.Count);
-            Assert.AreEqual("456", ec.GetRuntimeParameter<string>("XXX"));
-            Assert.AreEqual("789", ec.GetRuntimeParameter<string>("YYY"));
-            Assert.AreEqual("ABC", ec.GetRuntimeParameter<string>("ZZZ"));
+            ClassicAssert.AreEqual(3, ec.RuntimeParameters.Count);
+            ClassicAssert.AreEqual("456", ec.GetRuntimeParameter<string>("XXX"));
+            ClassicAssert.AreEqual("789", ec.GetRuntimeParameter<string>("YYY"));
+            ClassicAssert.AreEqual("ABC", ec.GetRuntimeParameter<string>("ZZZ"));
         }
 
         [Test]
@@ -67,8 +68,8 @@ namespace OnRamp.Test
 
             var ec = new EntityConfig();
             var dtn = ec.DateTimeNow;
-            Assert.IsTrue(dtn > now);
-            Assert.AreEqual(DateTimeKind.Local, dtn.Kind);
+            ClassicAssert.IsTrue(dtn > now);
+            ClassicAssert.AreEqual(DateTimeKind.Local, dtn.Kind);
         }
 
         [Test]
@@ -78,15 +79,15 @@ namespace OnRamp.Test
 
             var ec = new EntityConfig();
             var dtn = ec.DateTimeUtcNow;
-            Assert.IsTrue(dtn > now);
-            Assert.AreEqual(DateTimeKind.Utc, dtn.Kind);
+            ClassicAssert.IsTrue(dtn > now);
+            ClassicAssert.AreEqual(DateTimeKind.Utc, dtn.Kind);
         }
 
         [Test]
         public void NewGuid()
         {
             var ec = new EntityConfig();
-            Assert.AreNotEqual(ec.NewGuid, ec.NewGuid);
+            ClassicAssert.AreNotEqual(ec.NewGuid, ec.NewGuid);
         }
 
         [Test]
@@ -94,9 +95,9 @@ namespace OnRamp.Test
         {
             var ec = new EntityConfig();
             var r = ec.SelectGenResult;
-            Assert.IsNotNull(r);
-            Assert.AreEqual(1, r.Count());
-            Assert.AreSame(ec, r.First());
+            ClassicAssert.IsNotNull(r);
+            ClassicAssert.AreEqual(1, r.Count());
+            ClassicAssert.AreSame(ec, r.First());
         }
     }
 }

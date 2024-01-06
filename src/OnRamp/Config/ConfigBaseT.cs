@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,6 @@ namespace OnRamp.Config
     /// </summary>
     /// <typeparam name="TRoot">The root <see cref="Type"/>.</typeparam>
     /// <typeparam name="TParent">The parent <see cref="Type"/>.</typeparam>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public abstract class ConfigBase<TRoot, TParent> : ConfigBase where TRoot : ConfigBase where TParent : ConfigBase
     {
         /// <summary>

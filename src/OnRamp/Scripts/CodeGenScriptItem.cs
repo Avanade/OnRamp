@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using Newtonsoft.Json;
 using OnRamp.Config;
 using OnRamp.Generators;
 using OnRamp.Utility;
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace OnRamp.Scripts
@@ -13,7 +13,6 @@ namespace OnRamp.Scripts
     /// <summary>
     /// Represents the <see cref="HandlebarsCodeGenerator"/> script arguments used to define a <see cref="CodeGeneratorBase"/> (as specified by the <see cref="Type"/>) and other associated code-generation arguments.
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [CodeGenClass("Generate", Title = "'Generate' command.", Description = "The `Generate` command defines the execution parameters for a code-generation execution.")]
     [CodeGenCategory("Key", Title = "Provides the _Key_ configuration.")]
     public class CodeGenScriptItem : ConfigBase<CodeGenScript, CodeGenScript>
@@ -29,14 +28,14 @@ namespace OnRamp.Scripts
         /// <summary>
         /// Gets or sets the <see cref="CodeGeneratorBase"/> <see cref="System.Type"/>.
         /// </summary>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         [CodeGenProperty("Key", Title = "The .NET Generator (CodeGeneratorBase) Type.", IsMandatory = true)]
         public string? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the template resource name.
         /// </summary>
-        [JsonProperty("template")]
+        [JsonPropertyName("template")]
         [CodeGenProperty("Key", Title = "The template resource name.", IsMandatory = true)]
         public string? Template { get; set; }
 
@@ -44,7 +43,7 @@ namespace OnRamp.Scripts
         /// Gets or sets the file name.
         /// </summary>
         /// <remarks>Supports <b>Handlebars</b> syntax.</remarks>
-        [JsonProperty("file")]
+        [JsonPropertyName("file")]
         [CodeGenProperty("Key", Title = "The file name.", IsMandatory = true, Description = "Supports _Handlebars_ syntax.")]
         public string? File { get; set; }
 
@@ -52,14 +51,14 @@ namespace OnRamp.Scripts
         /// Gets or sets the directory name.
         /// </summary>
         /// <remarks>Supports <b>Handlebars</b> syntax.</remarks>
-        [JsonProperty("directory")]
+        [JsonPropertyName("directory")]
         [CodeGenProperty("Key", Title = "The directory name.", Description = "Supports _Handlebars_ syntax.")]
         public string? Directory { get; set; }
 
         /// <summary>
         /// Indicates whether the file is only generated once; i.e. only created where it does not already exist.
         /// </summary>
-        [JsonProperty("genOnce")]
+        [JsonPropertyName("genOnce")]
         [CodeGenProperty("Key", Title = "Indicates whether the file is only generated once; i.e. only created where it does not already exist.")]
         public bool IsGenOnce { get; set; }
 
@@ -67,14 +66,14 @@ namespace OnRamp.Scripts
         /// Gets or sets the gen-once file name pattern to check (can include wildcard '<c>*</c>' characters).
         /// </summary>
         /// <remarks>Supports <b>Handlebars</b> syntax.</remarks>
-        [JsonProperty("genOncePattern")]
+        [JsonPropertyName("genOncePattern")]
         [CodeGenProperty("Key", Title = "The gen-once file name pattern to check (can include wildcard `*` characters).", Description = "Supports _Handlebars_ syntax. Defaults to `File` where not specified.")]
         public string? GenOncePattern { get; set; }
 
         /// <summary>
         /// Gets or sets the help text.
         /// </summary>
-        [JsonProperty("text")]
+        [JsonPropertyName("text")]
         [CodeGenProperty("Key", Title = "The additional text written to the log to enable additional context.")]
         public string? Text { get; set; }
 
@@ -127,7 +126,7 @@ namespace OnRamp.Scripts
                 {
                     foreach (var json in ExtraProperties)
                     {
-                        RuntimeParameters.Add(json.Key, json.Value.ToObject<string?>());
+                        RuntimeParameters.Add(json.Key, json.Value.ToString());
                     }
                 }
             }

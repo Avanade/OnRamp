@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
-using Newtonsoft.Json;
 using OnRamp.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace OnRamp.Utility
 {
     /// <summary>
-    /// Represents a <c>JsonSchema</c> <see cref="Generate{T}(TextWriter, string?)">generator</see>.
+    /// Represents a <c>JsonSchema</c> <see cref="Generate{T}(Stream, string?)">generator</see>.
     /// </summary>
     /// <remarks>See <see href="https://json-schema.org/"/> and <see href="https://www.schemastore.org/json/"/>.</remarks>
     public static class JsonSchemaGenerator
@@ -24,29 +25,29 @@ namespace OnRamp.Utility
         /// <param name="title">The title override.</param>
         public static void Generate<T>(string path, string? title = null) where T : ConfigBase, IRootConfig
         {
-            using var tw = File.CreateText(path ?? throw new ArgumentNullException(nameof(path)));
-            Generate<T>(tw, title);
+            using var fs = File.Create(path ?? throw new ArgumentNullException(nameof(path)));
+            Generate<T>(fs, title);
         }
 
         /// <summary>
         /// Generates a <c>JsonSchema</c> from the <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The root <see cref="Type"/> to derive the schema from.</typeparam>
-        /// <param name="textWriter">The <see cref="TextWriter"/>.</param>
+        /// <param name="stream">The <see cref="Stream"/>.</param>
         /// <param name="title">The title override.</param>
-        public static void Generate<T>(TextWriter textWriter, string? title = null) where T : ConfigBase, IRootConfig
+        public static void Generate<T>(Stream stream, string? title = null) where T : ConfigBase, IRootConfig
         {
             var type = typeof(T);
             var types = new List<Type> { type };
             FindAllTypes(types, typeof(T));
 
-            using var jtw = new JsonTextWriter(textWriter ?? throw new ArgumentNullException(nameof(textWriter))) { Formatting = Formatting.Indented };
+            using var jtw = new Utf8JsonWriter(stream ?? throw new ArgumentNullException(nameof(stream)), new JsonWriterOptions { Indented = true });
 
             jtw.WriteStartObject();
             jtw.WritePropertyName("title");
-            jtw.WriteValue(title ?? StringConverter.ToSentenceCase(type.Name));
+            jtw.WriteStringValue(title ?? StringConverter.ToSentenceCase(type.Name));
             jtw.WritePropertyName("$schema");
-            jtw.WriteValue("https://json-schema.org/draft-04/schema#");
+            jtw.WriteStringValue("https://json-schema.org/draft-04/schema#");
             jtw.WritePropertyName("definitions");
 
             jtw.WriteStartObject();
@@ -57,7 +58,7 @@ namespace OnRamp.Utility
             jtw.WriteStartArray();
             jtw.WriteStartObject();
             jtw.WritePropertyName("$ref");
-            jtw.WriteValue($"#/definitions/{type.GetCustomAttribute<CodeGenClassAttribute>()?.Name}");
+            jtw.WriteStringValue($"#/definitions/{type.GetCustomAttribute<CodeGenClassAttribute>()?.Name}");
             jtw.WriteEndObject();
             jtw.WriteEndArray();
 
@@ -90,22 +91,19 @@ namespace OnRamp.Utility
         /// <summary>
         /// Writes the object definition.
         /// </summary>
-        private static void WriteDefinition(Type type, JsonTextWriter jtw)
+        private static void WriteDefinition(Type type, Utf8JsonWriter jtw)
         {
-            var csa = type.GetCustomAttribute<CodeGenClassAttribute>();
-            if (csa == null)
-                throw new InvalidOperationException($"Type {type.Name} does not have required ClassSchemaAttribute defined.");
-
+            var csa = type.GetCustomAttribute<CodeGenClassAttribute>() ?? throw new InvalidOperationException($"Type {type.Name} does not have required ClassSchemaAttribute defined.");
             jtw.WritePropertyName(csa.Name);
             jtw.WriteStartObject();
             jtw.WritePropertyName("type");
-            jtw.WriteValue("object");
+            jtw.WriteStringValue("object");
             jtw.WritePropertyName("title");
-            jtw.WriteValue(CleanString(csa.Title) ?? StringConverter.ToSentenceCase(csa.Name)!);
+            jtw.WriteStringValue(CleanString(csa.Title) ?? StringConverter.ToSentenceCase(csa.Name)!);
             if (csa.Description != null)
             {
                 jtw.WritePropertyName("description");
-                jtw.WriteValue(CleanString(csa.Description));
+                jtw.WriteStringValue(CleanString(csa.Description));
             }
 
             jtw.WritePropertyName("properties");
@@ -115,11 +113,11 @@ namespace OnRamp.Utility
 
             foreach (var pi in type.GetProperties())
             {
-                var jpa = pi.GetCustomAttribute<JsonPropertyAttribute>();
+                var jpa = pi.GetCustomAttribute<JsonPropertyNameAttribute>();
                 if (jpa == null)
                     continue;
 
-                var name = jpa.PropertyName ?? StringConverter.ToCamelCase(pi.Name)!;
+                var name = jpa.Name ?? StringConverter.ToCamelCase(pi.Name)!;
                 jtw.WritePropertyName(name);
                 jtw.WriteStartObject();
 
@@ -127,13 +125,13 @@ namespace OnRamp.Utility
                 if (psa != null)
                 {
                     jtw.WritePropertyName("type");
-                    jtw.WriteValue(GetJsonType(pi));
+                    jtw.WriteStringValue(GetJsonType(pi));
                     jtw.WritePropertyName("title");
-                    jtw.WriteValue(CleanString(psa.Title) ?? StringConverter.ToSentenceCase(name)!);
+                    jtw.WriteStringValue(CleanString(psa.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (psa.Description != null)
                     {
                         jtw.WritePropertyName("description");
-                        jtw.WriteValue(CleanString(psa.Description));
+                        jtw.WriteStringValue(CleanString(psa.Description));
                     }
 
                     if (psa.IsMandatory)
@@ -145,25 +143,22 @@ namespace OnRamp.Utility
                         jtw.WriteStartArray();
 
                         foreach (var opt in psa.Options)
-                            jtw.WriteValue(opt);
+                            jtw.WriteStringValue(opt);
 
                         jtw.WriteEndArray();
                     }
                 }
                 else
                 {
-                    var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>();
-                    if (pcsa == null)
-                        throw new InvalidOperationException($"Type '{type.Name}' Property '{pi.Name}' does not have a required PropertySchemaAttribute or PropertyCollectionSchemaAttribute.");
-
+                    var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>() ?? throw new InvalidOperationException($"Type '{type.Name}' Property '{pi.Name}' does not have a required PropertySchemaAttribute or PropertyCollectionSchemaAttribute.");
                     jtw.WritePropertyName("type");
-                    jtw.WriteValue("array");
+                    jtw.WriteStringValue("array");
                     jtw.WritePropertyName("title");
-                    jtw.WriteValue(CleanString(pcsa.Title) ?? StringConverter.ToSentenceCase(name)!);
+                    jtw.WriteStringValue(CleanString(pcsa.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (pcsa.Description != null)
                     {
                         jtw.WritePropertyName("description");
-                        jtw.WriteValue(CleanString(pcsa.Description));
+                        jtw.WriteStringValue(CleanString(pcsa.Description));
                     }
 
                     jtw.WritePropertyName("items");
@@ -172,7 +167,7 @@ namespace OnRamp.Utility
                     {
                         jtw.WriteStartObject();
                         jtw.WritePropertyName("type");
-                        jtw.WriteValue("string");
+                        jtw.WriteStringValue("string");
                         jtw.WriteEndObject();
                     }
                     else
@@ -181,7 +176,7 @@ namespace OnRamp.Utility
 
                         jtw.WriteStartObject();
                         jtw.WritePropertyName("$ref");
-                        jtw.WriteValue($"#/definitions/{t.GetCustomAttribute<CodeGenClassAttribute>()!.Name}");
+                        jtw.WriteStringValue($"#/definitions/{t.GetCustomAttribute<CodeGenClassAttribute>()!.Name}");
                         jtw.WriteEndObject();
                     }
                 }
@@ -197,7 +192,7 @@ namespace OnRamp.Utility
                 jtw.WriteStartArray();
 
                 foreach (var name in rqd)
-                    jtw.WriteValue(name);
+                    jtw.WriteStringValue(name);
 
                 jtw.WriteEndArray();
             }
@@ -241,6 +236,6 @@ namespace OnRamp.Utility
         /// <summary>
         /// Cleans the string.
         /// </summary>
-        private static string? CleanString(string? text) => text?.Replace('`', '\'');
+        private static string? CleanString(string? text) => text;
     }
 }

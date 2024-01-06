@@ -2,6 +2,12 @@
 
 Represents the **NuGet** versions.
 
+## v2.0.0
+- *Enhancement:* **Breaking change** - underlying JSON serialization has been changed from `Newtonsoft.Json` to `System.Text.Json`, with new `Utility.JsonSerializer` encapsulating logic to enable. The following steps are required to migrate existing usage:
+  - Rename all attribute references from `JsonProperty` to `JsonPropertyName`.
+  - Remove all attribute references to `[JsonObject(MemberSerialization = MemberSerialization.OptIn)]`; opt-in is the default behavior when leveraging the `CodeGenClassAttribute` attribute.
+- *Fixed:* All dependencies updated to the latest version.
+
 ## v1.0.8
 - *Fixed:* Added comparison context where reporting a file update as a result of using `ExpectNoChanges`.
 

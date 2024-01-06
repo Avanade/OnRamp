@@ -18,12 +18,12 @@ namespace OnRamp.Test
             MarkdownDocumentationGenerator.Generate<EntityConfig>(directory: "MSG", addBreaksBetweenSections: true);
 
             var fn = Path.Combine("MSG", "Entity.md");
-            Assert.IsTrue(File.Exists(fn));
-            Assert.AreEqual(File.ReadAllText(Path.Combine("Expected", "Entity.md")), File.ReadAllText(fn));
+            Assert.That(File.Exists(fn), Is.True);
+            Assert.That(File.ReadAllText(fn), Is.EqualTo(File.ReadAllText(Path.Combine("Expected", "Entity.md"))));
 
             fn = Path.Combine("MSG", "Property.md");
-            Assert.IsTrue(File.Exists(fn));
-            Assert.AreEqual(File.ReadAllText(Path.Combine("Expected", "Property.md")), File.ReadAllText(fn));
+            Assert.That(File.Exists(fn), Is.True);
+            Assert.That(File.ReadAllText(fn), Is.EqualTo(File.ReadAllText(Path.Combine("Expected", "Property.md"))));
         }
     }
 }
