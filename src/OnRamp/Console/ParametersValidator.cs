@@ -12,15 +12,10 @@ namespace OnRamp.Console
     /// <summary>
     /// Validate the Params to ensure format is correct and values are not duplicated.
     /// </summary>
-    public class ParametersValidator : IOptionValidator
+    /// <param name="args">The <see cref="ICodeGeneratorArgs"/> to update.</param>
+    public class ParametersValidator(ICodeGeneratorArgs args) : IOptionValidator
     {
-        private readonly ICodeGeneratorArgs _args;
-
-        /// <summary>
-        /// Initilizes a new instance of the <see cref="ParametersValidator"/> class.
-        /// </summary>
-        /// <param name="args">The <see cref="ICodeGeneratorArgs"/> to update.</param>
-        public ParametersValidator(ICodeGeneratorArgs args) => _args = args ?? throw new ArgumentNullException(nameof(args));
+        private readonly ICodeGeneratorArgs _args = args ?? throw new ArgumentNullException(nameof(args));
 
         /// <summary>
         /// Performs the validation.

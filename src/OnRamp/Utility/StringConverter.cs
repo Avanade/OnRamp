@@ -125,7 +125,7 @@ namespace OnRamp.Utility
         /// Gets or sets the special prefixes whereby the first two characters will be converted to lowercase versus the standard one.
         /// </summary>
         /// <remarks>Defaults to "ETag" and "OData".</remarks>
-        public static string[] TwoCharacterPrefixes { get; set; } = new string[] { "ETag", "OData" };
+        public static string[] TwoCharacterPrefixes { get; set; } = ["ETag", "OData"];
 
         /// <summary>
         /// Performs the special case handling.

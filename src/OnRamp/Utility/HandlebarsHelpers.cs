@@ -135,9 +135,9 @@ namespace OnRamp.Utility
             Handlebars.RegisterHelper("singularize", (writer, context, args) => writer.WriteSafeString(StringConverter.ToSingle(ValidateArgs("singularize", args).FirstOrDefault()?.ToString()) ?? ""));
 
             // Logs using the String.Format.
-            Handlebars.RegisterHelper("log-info", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogInformation(FormatString(ValidateArgs("log-info", args))));
-            Handlebars.RegisterHelper("log-warning", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogWarning(FormatString(ValidateArgs("log-warning", args))));
-            Handlebars.RegisterHelper("log-error", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogError(FormatString(ValidateArgs("log-error", args))));
+            Handlebars.RegisterHelper("log-info", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogInformation("{Info}", FormatString(ValidateArgs("log-info", args))));
+            Handlebars.RegisterHelper("log-warning", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogWarning("{Warning}", FormatString(ValidateArgs("log-warning", args))));
+            Handlebars.RegisterHelper("log-error", (writer, context, args) => (Logger ?? new ConsoleLogger()).LogError("{Error}", FormatString(ValidateArgs("log-error", args))));
             Handlebars.RegisterHelper("log-debug", (writer, context, args) => System.Diagnostics.Debug.WriteLine($"Handlebars > {FormatString(ValidateArgs("log-debug", args))}"));
 
             // Logs using the String.Format to the debugger and then initiates a break in the debugger itself.
@@ -210,9 +210,8 @@ namespace OnRamp.Utility
                 if (args[0] is not string name)
                     throw new CodeGenException("Handlebars template invokes function 'set-value' where the first argument must be a string, being the property name.");
 
-                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty);
-                if (pi == null)
-                    throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
+                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty)
+                    ?? throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
 
                 try
                 {
@@ -231,9 +230,8 @@ namespace OnRamp.Utility
                 if (args[0] is not string name)
                     throw new CodeGenException("Handlebars template invokes function 'add-value' where the first argument must be a string, being the property name.");
 
-                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty);
-                if (pi == null)
-                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
+                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty) 
+                    ?? throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
 
                 decimal sum = 0;
                 try

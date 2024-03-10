@@ -20,10 +20,12 @@ namespace OnRamp.Console
     /// <see cref="OnBeforeExecute(CommandLineApplication)"/>, <see cref="OnValidation(ValidationContext)"/> and <see cref="OnCodeGenerationAsync"/>. Changes to the console output can be achieved by overridding
     /// <see cref="OnWriteMasthead"/>, <see cref="OnWriteHeader"/>, <see cref="OnWriteArgs(ICodeGeneratorArgs)"/> and <see cref="OnWriteFooter(CodeGenStatistics)"/>.
     /// <para>The underlying command line parsing is provided by <see href="https://natemcmaster.github.io/CommandLineUtils/"/>.</para></remarks>
-    public class CodeGenConsole
+    /// <param name="args">The default <see cref="CodeGeneratorArgs"/> that will be overridden/updated by the command-line argument values.</param>
+    /// <param name="options">The console command-line <see cref="SupportedOptions"/>; defaults to <see cref="SupportedOptions.All"/>.</param>
+    public class CodeGenConsole(CodeGeneratorArgs? args = null, SupportedOptions options = SupportedOptions.All)
     {
-        private readonly SupportedOptions _supportedOptions;
-        private readonly Dictionary<SupportedOptions, CommandOption?> _options = new();
+        private readonly SupportedOptions _supportedOptions = options;
+        private readonly Dictionary<SupportedOptions, CommandOption?> _options = [];
 
         /// <summary>
         /// Split an <paramref name="args"/> <see cref="string"/> into an <see cref="Array"/> of arguments.
@@ -33,7 +35,7 @@ namespace OnRamp.Console
         public static string[] SplitArgumentsIntoArray(string? args)
         {
             if (string.IsNullOrEmpty(args))
-                return Array.Empty<string>();
+                return [];
 
             // See for inspiration: https://stackoverflow.com/questions/298830/split-string-containing-command-line-parameters-into-string-in-c-sharp/298990#298990
             var regex = Regex.Matches(args, @"\G(""((""""|[^""])+)""|(\S+)) *");
@@ -64,20 +66,9 @@ namespace OnRamp.Console
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CodeGenConsole"/> class.
-        /// </summary>
-        /// <param name="args">The default <see cref="CodeGeneratorArgs"/> that will be overridden/updated by the command-line argument values.</param>
-        /// <param name="options">The console command-line <see cref="SupportedOptions"/>; defaults to <see cref="SupportedOptions.All"/>.</param>
-        public CodeGenConsole(CodeGeneratorArgs? args = null, SupportedOptions options = SupportedOptions.All)
-        {
-            Args = args ?? new CodeGeneratorArgs();
-            _supportedOptions = options;
-        }
-
-        /// <summary>
         /// Gets the <see cref="CodeGeneratorArgs"/>.
         /// </summary>
-        public CodeGeneratorArgs Args { get; }
+        public CodeGeneratorArgs Args { get; } = args ?? new CodeGeneratorArgs();
 
         /// <summary>
         /// Gets the application/command name.

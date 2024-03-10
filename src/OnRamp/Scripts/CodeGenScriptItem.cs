@@ -80,7 +80,7 @@ namespace OnRamp.Scripts
         /// <summary>
         /// Gets the runtime parameters (as specified via <see cref="ConfigBase.ExtraProperties"/>).
         /// </summary>
-        public Dictionary<string, object?> RuntimeParameters { get; } = new Dictionary<string, object?>();
+        public Dictionary<string, object?> RuntimeParameters { get; } = [];
 
         /// <summary>
         /// Gets the <see cref="CodeGeneratorBase"/> as specified by <see cref="Type"/>.
@@ -99,7 +99,7 @@ namespace OnRamp.Scripts
             {
                 type = System.Type.GetType(Type ?? throw new CodeGenException(this, nameof(Type), $"Type must be specified.")) ?? throw new CodeGenException(this, nameof(Type), $"Type '{Type}' does not exist.");
 
-                if (!IsSubclassOfBaseType(typeof(CodeGeneratorBase), type) || type.GetConstructor(Array.Empty<Type>()) == null)
+                if (!IsSubclassOfBaseType(typeof(CodeGeneratorBase), type) || type.GetConstructor([]) == null)
                     throw new CodeGenException(this, nameof(Type), $"Type '{Type}' does not implement CodeGeneratorBase and/or have a default parameterless constructor.");
 
                 _generator = (CodeGeneratorBase)(Activator.CreateInstance(type) ?? throw new CodeGenException(this, nameof(Type), $"Type '{Type}' was unable to be instantiated."));
@@ -110,7 +110,7 @@ namespace OnRamp.Scripts
             catch (Exception ex) { throw new CodeGenException(this, nameof(Type), $"Type '{Type}' is invalid: {ex.Message}"); }
 
             // Make sure the template exists.
-            var (Exists, FileName) = StreamLocator.HasTemplateStream(Template!, Root!.CodeGenArgs!.Assemblies.ToArray(), StreamLocator.HandlebarsExtensions);
+            var (Exists, FileName) = StreamLocator.HasTemplateStream(Template!, [.. Root!.CodeGenArgs!.Assemblies], StreamLocator.HandlebarsExtensions);
             if (!Exists)
                 throw new CodeGenException(this, nameof(Template), $"Template '{Template}' does not exist.");
 

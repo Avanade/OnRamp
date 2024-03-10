@@ -14,15 +14,10 @@ namespace OnRamp.Console
     /// <summary>
     /// Validates the assembly name(s).
     /// </summary>
-    public class AssemblyValidator : IOptionValidator
+    /// <param name="args">The <see cref="ICodeGeneratorArgs"/> to update.</param>
+    public class AssemblyValidator(ICodeGeneratorArgs args) : IOptionValidator
     {
-        private readonly ICodeGeneratorArgs _args;
-
-        /// <summary>
-        /// Initilizes a new instance of the <see cref="AssemblyValidator"/> class.
-        /// </summary>
-        /// <param name="args">The <see cref="ICodeGeneratorArgs"/> to update.</param>
-        public AssemblyValidator(ICodeGeneratorArgs args) => _args = args ?? throw new ArgumentNullException(nameof(args));
+        private readonly ICodeGeneratorArgs _args = args ?? throw new ArgumentNullException(nameof(args));
 
         /// <summary>
         /// Performs the validation.

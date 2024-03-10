@@ -18,7 +18,7 @@ namespace OnRamp.Scripts
     public class CodeGenScript : ConfigRootBase<CodeGenScript>
     {
         private Type? _configType;
-        private readonly List<Type> _editorTypes = new();
+        private readonly List<Type> _editorTypes = [];
 
         /// <summary>
         /// Gets or sets the .NET <see cref="ConfigRootBase{TRoot}"/> Type for the underlying <see cref="Generators"/>.
@@ -96,7 +96,7 @@ namespace OnRamp.Scripts
                 catch (CodeGenException) { throw; }
                 catch (Exception ex) { throw new CodeGenException(this, nameof(EditorType), $"Type '{EditorType}' is invalid: {ex.Message}"); }
 
-                if (!typeof(IConfigEditor).IsAssignableFrom(configEditorType) || configEditorType.GetConstructor(Array.Empty<Type>()) == null)
+                if (!typeof(IConfigEditor).IsAssignableFrom(configEditorType) || configEditorType.GetConstructor([]) == null)
                     throw new CodeGenException(this, nameof(EditorType), $"Type '{EditorType}' does not implement IConfigEditor and/or have a default parameterless constructor.");
 
                 MergeEditors(configEditorType);

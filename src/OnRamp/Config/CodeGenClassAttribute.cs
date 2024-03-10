@@ -7,19 +7,14 @@ namespace OnRamp.Config
     /// <summary>
     /// Represents the <i>code-generation</i> class configuration.
     /// </summary>
+    /// <param name="name">The class name.</param>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class CodeGenClassAttribute : Attribute
+    public sealed class CodeGenClassAttribute(string name) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeGenClassAttribute"/> class.
-        /// </summary>
-        /// <param name="name">The class name.</param>
-        public CodeGenClassAttribute(string name) => Name = name ?? throw new ArgumentNullException(nameof(name));
-
         /// <summary>
         /// Gets the class name.
         /// </summary>
-        public string Name { get; }
+        public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
 
         /// <summary>
         /// Gets or sets the title.

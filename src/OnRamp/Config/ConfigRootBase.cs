@@ -20,7 +20,7 @@ namespace OnRamp.Config
         /// <summary>
         /// Gets the parameter overrides.
         /// </summary>
-        public Dictionary<string, object?> RuntimeParameters { get; } = new Dictionary<string, object?>();
+        public Dictionary<string, object?> RuntimeParameters { get; } = [];
 
         /// <summary>
         /// Sets the <see cref="ICodeGeneratorArgs"/>.

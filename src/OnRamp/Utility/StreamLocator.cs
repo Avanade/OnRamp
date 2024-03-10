@@ -16,12 +16,12 @@ namespace OnRamp.Utility
         /// <summary>
         /// Gets the list of standard YAML and JSON extensions. 
         /// </summary>
-        public static readonly string[] YamlJsonExtensions = new string[] { "yaml", "yml", "json", "jsn" };
+        public static readonly string[] YamlJsonExtensions = ["yaml", "yml", "json", "jsn"];
 
         /// <summary>
         /// Gets the list of standard <i>Handlebars</i> extensions.
         /// </summary>
-        public static readonly string[] HandlebarsExtensions = new string[] { "hb", "hbs" };
+        public static readonly string[] HandlebarsExtensions = ["hb", "hbs"];
 
         /// <summary>
         /// Gets the <b>Resource</b> content from the file system and then <c>Resources</c> folder within the <paramref name="assemblies"/> until found.

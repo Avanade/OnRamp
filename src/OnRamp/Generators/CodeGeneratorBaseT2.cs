@@ -57,7 +57,7 @@ namespace OnRamp.Generators
 
             Handlebars.Configuration.TextEncoder = null;
 
-            using var stream = StreamLocator.GetTemplateStreamReader(script.Template!, script.Root!.CodeGenArgs!.Assemblies.ToArray(), StreamLocator.HandlebarsExtensions).StreamReader;
+            using var stream = StreamLocator.GetTemplateStreamReader(script.Template!, [.. script.Root!.CodeGenArgs!.Assemblies], StreamLocator.HandlebarsExtensions).StreamReader;
             var contentHandlebars = new HandlebarsCodeGenerator(stream!);
             var fileNameHandlebars = new HandlebarsCodeGenerator(script.File!);
             var genOncePatternHandlebars = string.IsNullOrEmpty(script.GenOncePattern) ? null : new HandlebarsCodeGenerator(script.GenOncePattern!);

@@ -76,7 +76,7 @@ Attribute | Description
 [`CodeGenPropertyAttribute`](./src/OnRamp/Config/CodeGenPropertyAttribute.cs) | Defines validation (`IsMandatory`, `IsUnique` and `Options`) and documentation for a property (non-collection).
 [`CodeGenPropertyCollectionAttribute`](./src/OnRamp/Config/CodeGenPropertyCollectionAttribute.cs) | Defines validation (`IsMandatory`) and documentation for a collection property.
 
-The configuration must also use the [Newtonsoft Json.NET serializer attributes](https://www.newtonsoft.com/json/help/html/SerializationAttributes.htm) as [Json.NET](https://www.newtonsoft.com/json/help) is used internally to perform all JSON deserialization.
+The configuration must also use the `System.Text.Json` [serializer attributes](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/customize-properties) as [`System.Text.Json`](https://learn.microsoft.com/en-us/dotnet/standard/serialization/) is used internally to perform all JSON deserialization.
 
 <br/>
 
@@ -85,17 +85,16 @@ The configuration must also use the [Newtonsoft Json.NET serializer attributes](
 An example is as follows:
 
 ``` csharp
-[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 [CodeGenClass("Entity", Title = "'Entity' object.", Description = "The `Entity` object.", Markdown = "This is a _sample_ markdown.", ExampleMarkdown = "This is an `example` markdown.")]
 [CodeGenCategory("Key", Title = "Provides the _Key_ configuration.")]
 [CodeGenCategory("Collection", Title = "Provides related child (hierarchical) configuration.")]
 public class EntityConfig : ConfigRootBase<EntityConfig>
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     [CodeGenProperty("Key", Title = "The entity name.", IsMandatory = true)]
     public string? Name { get; set; }
 
-    [JsonProperty("properties")]
+    [JsonPropertyName("properties")]
     [CodeGenPropertyCollection("Collection", Title = "The `Property` collection.", IsImportant = true)]
     public List<PropertyConfig>? Properties { get; set; }
 
@@ -105,22 +104,21 @@ public class EntityConfig : ConfigRootBase<EntityConfig>
     }
 }
 
-[JsonObject(MemberSerialization = MemberSerialization.OptIn)]
 [CodeGenClass("Property", Title = "'Property' object.", Description = "The `Property` object.")]
 [CodeGenCategory("Key", Title = "Provides the _Key_ configuration.")]
 public class PropertyConfig : ConfigBase<EntityConfig, EntityConfig>
 {
     public override string QualifiedKeyName => BuildQualifiedKeyName("Property", Name);
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     [CodeGenProperty("Key", Title = "The property name.", IsMandatory = true, IsUnique = true)]
     public string? Name { get; set; }
 
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     [CodeGenProperty("Key", Title = "The property type.", Description = "This is a more detailed description for the property type.", IsImportant = true, Options = new string[] { "string", "int", "decimal" })]
     public string? Type { get; set; }
 
-    [JsonProperty("isNullable")]
+    [JsonPropertyName("isNullable")]
     [CodeGenProperty("Key", Title = "Indicates whether the property is nullable.")]
     public bool? IsNullable { get; set; }
 

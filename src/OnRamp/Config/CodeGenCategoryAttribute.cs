@@ -7,19 +7,14 @@ namespace OnRamp.Config
     /// <summary>
     /// Represents the <i>code-generation</i> class category configuration.
     /// </summary>
+    /// <param name="category">The grouping category name.</param>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public sealed class CodeGenCategoryAttribute : Attribute
+    public sealed class CodeGenCategoryAttribute(string category) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeGenCategoryAttribute"/> class.
-        /// </summary>
-        /// <param name="category">The grouping category name.</param>
-        public CodeGenCategoryAttribute(string category) => Category = category;
-
         /// <summary>
         /// Gets or sets the category name.
         /// </summary>
-        public string Category { get; }
+        public string Category { get; } = category;
 
         /// <summary>
         /// Gets or sets the title.
