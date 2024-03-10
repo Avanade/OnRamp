@@ -97,7 +97,7 @@ namespace OnRamp.Config
         protected async Task<List<T>> PrepareCollectionAsync<T>(List<T>? coll) where T : ConfigBase
         {
             if (coll == null)
-                return new List<T>();
+                return [];
 
             var dict = new Dictionary<PropertyInfo, HashSet<object?>>();
             foreach (var pi in typeof(T).GetProperties())
@@ -105,7 +105,7 @@ namespace OnRamp.Config
                 foreach (var psa in pi.GetCustomAttributes(typeof(CodeGenPropertyAttribute), true).OfType<CodeGenPropertyAttribute>())
                 {
                     if (psa.IsUnique)
-                        dict.Add(pi, new HashSet<object?>());
+                        dict.Add(pi, []);
                 }
             }
 

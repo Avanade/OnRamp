@@ -9,15 +9,10 @@ namespace OnRamp.Console
     /// <summary>
     /// Represents an <see cref="ILogger"/> that writes to an <see cref="IConsole"/>.
     /// </summary>
-    public class ConsoleLogger : ILogger
+    /// <param name="console">The <see cref="IConsole"/>; where <c>null</c> will default to using <see cref="System.Console"/>.</param>
+    public class ConsoleLogger(IConsole? console = null) : ILogger
     {
-        private readonly IConsole? _console;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleLogger"/>.
-        /// </summary>
-        /// <param name="console">The <see cref="IConsole"/>; where <c>null</c> will default to using <see cref="System.Console"/>.</param>
-        public ConsoleLogger(IConsole? console = null) => _console = console;
+        private readonly IConsole? _console = console;
 
         /// <inheritdoc />
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Default;

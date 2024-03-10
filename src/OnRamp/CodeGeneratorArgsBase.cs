@@ -23,10 +23,10 @@ namespace OnRamp
         public DirectoryInfo? OutputDirectory { get; set; }
 
         /// <inheritdoc/>
-        public List<Assembly> Assemblies { get; } = new List<Assembly>();
+        public List<Assembly> Assemblies { get; } = [];
 
         /// <inheritdoc/>
-        public Dictionary<string, object?> Parameters { get; } = new Dictionary<string, object?>();
+        public Dictionary<string, object?> Parameters { get; } = [];
 
         /// <inheritdoc/>
         public ILogger? Logger { get; set; }

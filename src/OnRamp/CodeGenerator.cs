@@ -42,7 +42,7 @@ namespace OnRamp
         /// </summary>
         private static async Task<CodeGenScript> LoadScriptsAsync(ICodeGeneratorArgs args)
         {
-            var r = StreamLocator.GetScriptStreamReader(args.ScriptFileName ?? throw new CodeGenException("Script file name must be specified."), args.Assemblies.ToArray(), StreamLocator.YamlJsonExtensions);
+            var r = StreamLocator.GetScriptStreamReader(args.ScriptFileName ?? throw new CodeGenException("Script file name must be specified."), [.. args.Assemblies], StreamLocator.YamlJsonExtensions);
             using var s = r.StreamReader ?? throw new CodeGenException($"Script '{args.ScriptFileName}' does not exist.");
             args.ScriptFileName = r.FileName;
             return await LoadScriptStreamAsync(args, null, args.ScriptFileName, s).ConfigureAwait(false);
@@ -84,7 +84,7 @@ namespace OnRamp
                 {
                     foreach (var ifn in scripts.Inherits)
                     {
-                        using var s = StreamLocator.GetScriptStreamReader(ifn, args.Assemblies.ToArray(), StreamLocator.YamlJsonExtensions).StreamReader ?? throw new CodeGenException($"Script '{ifn}' does not exist.");
+                        using var s = StreamLocator.GetScriptStreamReader(ifn, [.. args.Assemblies], StreamLocator.YamlJsonExtensions).StreamReader ?? throw new CodeGenException($"Script '{ifn}' does not exist.");
                         var inherit = await LoadScriptStreamAsync(args, rootScript, ifn, s).ConfigureAwait(false);
                         foreach (var iscript in inherit.Generators!)
                         {
@@ -131,22 +131,20 @@ namespace OnRamp
         public ICodeGeneratorArgs CodeGenArgs { get; }
 
         /// <summary>
-        /// Execute the code-generation; loads the configuration file and executes each of the scripted templates.
+        /// Loads the <see cref="IRootConfig"/> <see cref="ConfigBase"/> from the specified <paramref name="configFileName"/>.
         /// </summary>
-        /// <param name="configFileName">The filename (defaults to <see cref="CodeGenArgs"/>) to load the content from the file system (primary) or <see cref="ICodeGeneratorArgs.Assemblies"/> (secondary, recursive until found).</param>
-        /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
-        /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
-        /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
-        public async Task<CodeGenStatistics> GenerateAsync(string? configFileName = null)
+        /// <param name="configFileName">The configuration file name.</param>
+        /// <returns>The <see cref="IRootConfig"/> <see cref="ConfigBase"/>.</returns>
+        public async Task<ConfigBase> LoadConfigAsync(string? configFileName = null)
         {
             var fn = configFileName ?? CodeGenArgs.ConfigFileName ?? throw new CodeGenException("Config file must be specified.");
-            var r = StreamLocator.GetStreamReader(fn, null, CodeGenArgs.Assemblies.ToArray());
+            var r = StreamLocator.GetStreamReader(fn, null, [.. CodeGenArgs.Assemblies]);
             using var sr = r.StreamReader ?? throw new CodeGenException($"Config '{fn}' does not exist.");
-            return await GenerateAsync(fn, sr, StreamLocator.GetContentType(r.FileName)).ConfigureAwait(false);
+            return await LoadConfigAsync(sr, StreamLocator.GetContentType(r.FileName), r.FileName).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Execute the code-generation; loads the configuration from the <paramref name="configReader"/> and executes each of the scripted templates.
+        /// Loads the <see cref="IRootConfig"/> <see cref="ConfigBase"/> from the specified <paramref name="configReader"/>.
         /// </summary>
         /// <param name="configReader">The <see cref="TextReader"/> containing the configuration.</param>
         /// <param name="contentType">The corresponding <see cref="StreamContentType"/>.</param>
@@ -154,12 +152,7 @@ namespace OnRamp
         /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
         /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
         /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
-        public async Task<CodeGenStatistics> GenerateAsync(TextReader configReader, StreamContentType contentType, string configFileName = "<stream>") => await GenerateAsync(configFileName, configReader, contentType).ConfigureAwait(false);
-
-        /// <summary>
-        /// Executes the code-generation.
-        /// </summary>
-        private async Task<CodeGenStatistics> GenerateAsync(string configFileName, TextReader configReader, StreamContentType contentType)
+        public async Task<ConfigBase> LoadConfigAsync(TextReader configReader, StreamContentType contentType, string configFileName = "<stream>")
         {
             ConfigBase? config;
             IRootConfig rootConfig;
@@ -199,11 +192,45 @@ namespace OnRamp
                 {
                     await ce.AfterPrepareAsync(rootConfig).ConfigureAwait(false);
                 }
+
+                return config;
             }
             catch (CodeGenException cgex)
             {
                 throw new CodeGenException($"Config '{configFileName}' is invalid: {cgex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Execute the code-generation; loads the configuration file and executes each of the scripted templates.
+        /// </summary>
+        /// <param name="configFileName">The filename (defaults to <see cref="CodeGenArgs"/>) to load the content from the file system (primary) or <see cref="ICodeGeneratorArgs.Assemblies"/> (secondary, recursive until found).</param>
+        /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
+        /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
+        /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
+        public async Task<CodeGenStatistics> GenerateAsync(string? configFileName = null)
+            => await GenerateAsync(await LoadConfigAsync(configFileName).ConfigureAwait(false)).ConfigureAwait(false);
+
+        /// <summary>
+        /// Execute the code-generation; loads the configuration from the <paramref name="configReader"/> and executes each of the scripted templates.
+        /// </summary>
+        /// <param name="configReader">The <see cref="TextReader"/> containing the configuration.</param>
+        /// <param name="contentType">The corresponding <see cref="StreamContentType"/>.</param>
+        /// <param name="configFileName">The optional configuration file name used specifically in error messages.</param>
+        /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
+        /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
+        /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
+        public async Task<CodeGenStatistics> GenerateAsync(TextReader configReader, StreamContentType contentType, string configFileName = "<stream>") 
+            => await GenerateAsync(await LoadConfigAsync(configReader, contentType, configFileName).ConfigureAwait(false)).ConfigureAwait(false);
+
+        /// <summary>
+        /// Executes the code-generation for the specific <paramref name="config"/>.
+        /// </summary>
+        /// <param name="config">The <see cref="IRootConfig"/> <see cref="ConfigBase"/>.</param>
+        public Task<CodeGenStatistics> GenerateAsync(ConfigBase config)
+        {
+            if (config is not IRootConfig rootConfig)
+                throw new ArgumentException("Configuration must implement IRootConfig.", nameof(config));
 
             // Generate the scripted artefacts.
             var overallStopwatch = Stopwatch.StartNew();
@@ -232,7 +259,7 @@ namespace OnRamp
 
             overallStopwatch.Stop();
             overallStats.ElapsedMilliseconds = overallStopwatch.ElapsedMilliseconds;
-            return overallStats;
+            return Task.FromResult(overallStats);
         }
 
         /// <summary>
@@ -268,7 +295,7 @@ namespace OnRamp
                 else
                 {
                     // Perform a wildcard search and stop code-gen where any matches.
-                    if (di.GetFiles(outputArgs.GenOncePattern).Any())
+                    if (di.GetFiles(outputArgs.GenOncePattern).Length != 0)
                         return;
                 }
             }
@@ -314,7 +341,7 @@ namespace OnRamp
         private static string[] ConvertContentIntoLines(string? content)
         {
             if (content is null)
-                return Array.Empty<string>();
+                return [];
 
             string line;
             var lines = new List<string>();
@@ -324,7 +351,7 @@ namespace OnRamp
                 lines.Add(line);
             }
 
-            return lines.ToArray();
+            return [.. lines];
         }
 
         /// <summary>

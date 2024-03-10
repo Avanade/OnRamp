@@ -65,7 +65,7 @@ namespace OnRamp.Utility
 
         private class YamlNodeTypeResolver : INodeTypeResolver
         {
-            private static readonly string[] boolValues = { "true", "false" };
+            private static readonly string[] boolValues = ["true", "false"];
 
             /// <inheritdoc/>
             bool INodeTypeResolver.Resolve(NodeEvent? nodeEvent, ref Type currentType)

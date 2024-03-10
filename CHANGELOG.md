@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.1.0
+- *Enhancement:* Added `CodeGenerator.LoadConfigAsync` to enable the loading of the configuration without having to execute the code generation. This is useful when needing to either further validate the configuration prior to execution, or be able to query the configuration without initiating the code generation.
+- *Fixed:* All dependencies updated to the latest version.
+
 ## v2.0.0
 - *Enhancement:* **Breaking change** - underlying JSON serialization has been changed from `Newtonsoft.Json` to `System.Text.Json`, with new `Utility.JsonSerializer` encapsulating logic to enable. The following steps are required to migrate existing usage:
   - Rename all attribute references from `JsonProperty` to `JsonPropertyName`.
