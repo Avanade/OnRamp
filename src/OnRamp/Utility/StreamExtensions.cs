@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
@@ -60,8 +61,40 @@ namespace OnRamp.Utility
                     return DeserializeJson(sr, type);
                 }
             }
-#pragma warning restore IDE0063        
+#pragma warning restore IDE0063
         }
+
+        /// <summary>
+        /// Converts the <paramref name="yaml"/> <see cref="TextReader"/> content into a <see cref="JsonNode"/>.
+        /// </summary>
+        /// <param name="yaml">The YAML <see cref="TextReader"/>.</param>
+        /// <returns>The <see cref="JsonNode"/>.</returns>
+        public static JsonNode? YamlToJsonNode(this TextReader yaml)
+        {
+            var yml = new DeserializerBuilder().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
+
+#pragma warning disable IDE0063 // Use simple 'using' statement; cannot as need to be more explicit with managing the close and dispose.
+            using (var ms = new MemoryStream())
+            {
+                using (var sw = new StreamWriter(ms))
+                {
+                    sw.Write(new SerializerBuilder().JsonCompatible().Build().Serialize(yml!));
+                    sw.Flush();
+
+                    ms.Position = 0;
+                    using var sr = new StreamReader(ms);
+                    return sr.JsonToJsonNode();
+                }
+            }
+#pragma warning restore IDE0063
+        }
+
+        /// <summary>
+        /// Converts the <paramref name="json"/> <see cref="TextReader"/> content into a <see cref="JsonNode"/>.
+        /// </summary>
+        /// <param name="json">The YAML <see cref="TextReader"/>.</param>
+        /// <returns>The <see cref="JsonNode"/>.</returns>
+        public static JsonNode? JsonToJsonNode(this TextReader json) => JsonNode.Parse(json.ReadToEnd());
 
         private class YamlNodeTypeResolver : INodeTypeResolver
         {
