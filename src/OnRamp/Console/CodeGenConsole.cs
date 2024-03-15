@@ -349,9 +349,6 @@ namespace OnRamp.Console
             {
                 args.Logger.LogInformation("{Content}", $"  {a.FullName}");
             }
-
-            args.Logger.LogInformation("{Content}", string.Empty);
-            args.Logger.LogInformation("{Content}", "Scripts:");
         }
 
         /// <summary>

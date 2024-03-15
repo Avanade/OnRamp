@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.0
+- *Enhancement:* Added `ConeGenerator.OnConfigurationLoad` to enable validation and/or mutation of the configuration (`JsonNode`) before deserialization into the corresponding `ConfigBase` type.
+
 ## v2.1.0
 - *Enhancement:* Added `CodeGenerator.LoadConfigAsync` to enable the loading of the configuration without having to execute the code generation. This is useful when needing to either further validate the configuration prior to execution, or be able to query the configuration without initiating the code generation.
 - *Fixed:* All dependencies updated to the latest version.

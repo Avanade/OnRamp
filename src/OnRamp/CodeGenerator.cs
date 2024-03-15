@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace OnRamp
@@ -19,6 +21,11 @@ namespace OnRamp
     /// </summary>
     public class CodeGenerator
     {
+        /// <summary>
+        /// Represents the file name when loaded from a stream; i.e. actual file name is unknown.
+        /// </summary>
+        public const string StreamFileName = "<stream>";
+
         /// <summary>
         /// Create a new instance of the <see cref="CodeGenerator"/> class.
         /// </summary>
@@ -152,7 +159,7 @@ namespace OnRamp
         /// <returns>The resultant <see cref="CodeGenStatistics"/>.</returns>
         /// <exception cref="CodeGenException">Thrown when an error is encountered during the code-generation.</exception>
         /// <exception cref="CodeGenChangesFoundException">Thrown where the code-generation would result in changes to an underlying artefact. This is managed by setting <see cref="ICodeGeneratorArgs.ExpectNoChanges"/> to <c>true</c>.</exception>
-        public async Task<ConfigBase> LoadConfigAsync(TextReader configReader, StreamContentType contentType, string configFileName = "<stream>")
+        public async Task<ConfigBase> LoadConfigAsync(TextReader configReader, StreamContentType contentType, string configFileName = StreamFileName)
         {
             ConfigBase? config;
             IRootConfig rootConfig;
@@ -160,14 +167,28 @@ namespace OnRamp
             // Load, validate and prepare.
             try
             {
+                JsonNode? jsonNode;
+
+                // Read the YAML/JSON into a JsonNode. 
                 try
                 {
-                    config = contentType switch
+                    jsonNode = contentType switch
                     {
-                        StreamContentType.Yaml => (ConfigBase?)configReader.DeserializeYaml(Scripts.GetConfigType()),
-                        StreamContentType.Json => (ConfigBase?)configReader.DeserializeJson(Scripts.GetConfigType()),
+                        StreamContentType.Yaml => configReader.YamlToJsonNode(),
+                        StreamContentType.Json => configReader.JsonToJsonNode(),
                         _ => throw new CodeGenException($"Stream content type is not supported.")
                     } ?? throw new CodeGenException($"Stream is empty.");
+
+                    // Verify and mutate the configuration before deserialization.
+                    OnConfigurationLoad(Scripts, configFileName, jsonNode);
+                }
+                catch (CodeGenException) { throw; }
+                catch (Exception ex) { throw new CodeGenException(ex.Message); }
+
+                // Deserialize the JsonNode in to the configured (script) type.
+                try
+                {
+                    config = (ConfigBase?)jsonNode.Deserialize(Scripts.GetConfigType(), OnRamp.Utility.JsonSerializer.Options);
                 }
                 catch (CodeGenException) { throw; }
                 catch (Exception ex) { throw new CodeGenException(ex.Message); }
@@ -232,6 +253,9 @@ namespace OnRamp
             if (config is not IRootConfig rootConfig)
                 throw new ArgumentException("Configuration must implement IRootConfig.", nameof(config));
 
+            CodeGenArgs.Logger?.LogInformation("{Content}", string.Empty);
+            CodeGenArgs.Logger?.LogInformation("{Content}", "Scripts:");
+
             // Generate the scripted artefacts.
             var overallStopwatch = Stopwatch.StartNew();
             var overallStats = new CodeGenStatistics();
@@ -261,6 +285,14 @@ namespace OnRamp
             overallStats.ElapsedMilliseconds = overallStopwatch.ElapsedMilliseconds;
             return Task.FromResult(overallStats);
         }
+
+        /// <summary>
+        /// Provides an opportunity to verify and manipulate the mutable <i>configuration</i> <see cref="JsonNode"/> as it is loaded; directly before it is deserialized into the configured <see cref="ConfigBase"/> as defined by the <see cref="CodeGenScript.ConfigType"/>.
+        /// </summary>
+        /// <param name="script">The <see cref="CodeGenScript"/>.</param>
+        /// <param name="fileName">The configuration file name.</param>
+        /// <param name="json">The <see cref="JsonNode"/>.</param>
+        protected virtual void OnConfigurationLoad(CodeGenScript script, string fileName, JsonNode json) { }
 
         /// <summary>
         /// Handles the processing before the <paramref name="script"/> is executed.
