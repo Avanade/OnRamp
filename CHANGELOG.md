@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.1
+- *Fixed:* All dependencies updated to the latest version.
+
 ## v2.2.0
 - *Enhancement:* Added `ConeGenerator.OnConfigurationLoad` to enable validation and/or mutation of the configuration (`JsonNode`) before deserialization into the corresponding `ConfigBase` type.
 
