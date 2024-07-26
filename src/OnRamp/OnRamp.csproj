@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>OnRamp</RootNamespace>
-    <Version>2.2.0</Version>
+    <Version>2.2.1</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Avanade</Authors>
     <Company>Avanade</Company>
@@ -48,13 +48,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Handlebars.Net" Version="2.1.4" />
+    <PackageReference Include="Handlebars.Net" Version="2.1.6" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Pluralize.NET" Version="1.0.2" />
     <PackageReference Include="StrongNamer" Version="0.2.5" />
-    <PackageReference Include="System.Text.Json" Version="8.0.2" />
-    <PackageReference Include="YamlDotNet" Version="15.1.2" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="YamlDotNet" Version="16.0.0" />
   </ItemGroup>
 
 </Project>

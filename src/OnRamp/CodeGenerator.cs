@@ -42,7 +42,7 @@ namespace OnRamp
         /// <returns>The <typeparamref name="TCodeGenerator"/> instance.</returns>
         /// <remarks>The constructor must be the same as the <see cref="CodeGenerator"/>.</remarks>
         public static async Task<TCodeGenerator> CreateAsync<TCodeGenerator>(ICodeGeneratorArgs args) where TCodeGenerator : CodeGenerator
-            => (TCodeGenerator)Activator.CreateInstance(typeof(TCodeGenerator), new object[] { args, await LoadScriptsAsync(args).ConfigureAwait(false) });
+            => (TCodeGenerator)Activator.CreateInstance(typeof(TCodeGenerator), [args, await LoadScriptsAsync(args).ConfigureAwait(false)]);
 
         /// <summary>
         /// Load the Scripts.
