@@ -105,12 +105,12 @@ namespace OnRamp.Utility
             {
                 if (nodeEvent is Scalar scalar && scalar.Style == YamlDotNet.Core.ScalarStyle.Plain)
                 {
-                    if (decimal.TryParse(scalar.Value, out _))
+                    if (decimal.TryParse(scalar.Value, out var dv))
                     {
                         if (scalar.Value.Length > 1 && scalar.Value.StartsWith('0')) // Valid JSON does not support a number that starts with a zero.
                             currentType = typeof(string);
                         else
-                            currentType = typeof(decimal);
+                            currentType = dv == Math.Round(dv) ? typeof(long) : typeof(decimal);
 
                         return true;
                     }

@@ -45,6 +45,14 @@
         "isNullable": {
           "type": "boolean",
           "title": "Indicates whether the property is nullable."
+        },
+        "count": {
+          "type": "integer",
+          "title": "Test out an integer."
+        },
+        "amount": {
+          "type": "number",
+          "title": "Test out a decimal."
         }
       },
       "required": [

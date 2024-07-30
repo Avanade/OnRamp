@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.2
+- *Fixed:* Corrected the YAML to JSON conversion for `long` vs `string` values.
+
 ## v2.2.1
 - *Fixed:* All dependencies updated to the latest version.
 

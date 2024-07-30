@@ -12,4 +12,6 @@ Property | Description
 **`name`** | The property name. [Mandatory]
 **`type`** | The property type. Valid options are: `string`, `int`, `decimal`.<br/>&dagger; This is a more detailed description for the property type.
 `isNullable` | Indicates whether the property is nullable.
+`count` | Test out an integer.
+`amount` | Test out a decimal.
 
