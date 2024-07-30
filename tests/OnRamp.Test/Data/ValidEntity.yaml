@@ -2,4 +2,4 @@
 properties:
 - { name: Name }
 - { name: Age, type: int }
-- { name: Salary, type: decimal, isNullable: true }
+- { name: Salary, type: decimal, isNullable: true, count: 4, amount: 3.95 }

@@ -24,6 +24,14 @@ namespace OnRamp.Test.Config
         [CodeGenProperty("Key", Title = "Indicates whether the property is nullable.")]
         public bool? IsNullable { get; set; }
 
+        [JsonPropertyName("count")]
+        [CodeGenProperty("Key", Title = "Test out an integer.")]
+        public int? Count { get; set; }
+
+        [JsonPropertyName("amount")]
+        [CodeGenProperty("Key", Title = "Test out a decimal.")]
+        public decimal? Amount { get; set; }
+
         protected override Task PrepareAsync()
         {
             Type = DefaultWhereNull(Type, () => "string");
