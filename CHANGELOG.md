@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.3
+- *Fixed*: Updated `System.Text.Json` package depenedency to latest; resolve [Microsoft Security Advisory CVE-2024-43485](https://github.com/advisories/GHSA-8g4q-xg66-9fp4).
+
 ## v2.2.2
 - *Fixed:* Corrected the YAML to JSON conversion for `long` vs `string` values.
 
