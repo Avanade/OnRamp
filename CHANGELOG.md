@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.4
+- *Fixed:* `AddParameter` now correctly accepts a value of any type; not just limited to `string` values.
+
 ## v2.2.3
 - *Fixed*: Updated `System.Text.Json` package depenedency to latest; resolve [Microsoft Security Advisory CVE-2024-43485](https://github.com/advisories/GHSA-8g4q-xg66-9fp4).
 

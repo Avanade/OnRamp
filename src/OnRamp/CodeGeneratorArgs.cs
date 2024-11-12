@@ -49,7 +49,7 @@ namespace OnRamp
         /// <param name="key">The parameter name.</param>
         /// <param name="value">The parameter value.</param>
         /// <returns>The current <see cref="CodeGeneratorArgs"/> instance to support fluent-style method-chaining.</returns>
-        public CodeGeneratorArgs AddParameter(string key, string? value)
+        public CodeGeneratorArgs AddParameter<T>(string key, T value)
         {
             ((ICodeGeneratorArgs)this).AddParameter(key, value);
             return this;
