@@ -2,6 +2,10 @@
 
 Represents the **NuGet** versions.
 
+## v2.2.5
+- *Fixed:* The generated schema for arrays has been updated to allow of nulls.
+- *Fixed:* All dependencies updated to the latest version where applicable (minimize breaking changes).
+
 ## v2.2.4
 - *Fixed:* `AddParameter` now correctly accepts a value of any type; not just limited to `string` values.
 

@@ -152,7 +152,13 @@ namespace OnRamp.Utility
                 {
                     var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>() ?? throw new InvalidOperationException($"Type '{type.Name}' Property '{pi.Name}' does not have a required PropertySchemaAttribute or PropertyCollectionSchemaAttribute.");
                     jtw.WritePropertyName("type");
+                    jtw.WriteStartArray();
                     jtw.WriteStringValue("array");
+                    jtw.WriteStringValue("null");
+                    jtw.WriteEndArray();
+                    jtw.WritePropertyName("default");
+                    jtw.WriteStartArray();
+                    jtw.WriteEndArray();
                     jtw.WritePropertyName("title");
                     jtw.WriteStringValue(CleanString(pcsa.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (pcsa.Description != null)

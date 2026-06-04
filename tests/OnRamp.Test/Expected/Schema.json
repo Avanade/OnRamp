@@ -12,7 +12,11 @@
           "title": "The entity name."
         },
         "properties": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
+          "default": [],
           "title": "The \u0060Property\u0060 collection.",
           "items": {
             "$ref": "#/definitions/Property"

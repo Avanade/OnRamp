@@ -63,7 +63,10 @@ namespace OnRamp
         /// <remarks>The order in which they are specified is the order in which they will be probed for embedded resources.</remarks>
         void AddAssembly(params Assembly[] assemblies)
         {
-            foreach (var a in assemblies.Reverse())
+            if (assemblies == null || assemblies.Length == 0)
+                return;
+
+            foreach (var a in ((IEnumerable<Assembly>)assemblies).Reverse())
             {
                 if (!Assemblies.Contains(a))
                     Assemblies.Insert(0, a);
