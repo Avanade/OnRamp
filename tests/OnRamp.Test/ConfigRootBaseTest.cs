@@ -7,9 +7,15 @@ using System.Linq;
 
 namespace OnRamp.Test
 {
+    /// <summary>
+    /// Verifies root runtime parameters and template convenience properties.
+    /// </summary>
     [TestFixture]
     public class ConfigRootBaseTest
     {
+        /// <summary>
+        /// Verifies parameter conversion, missing-value defaults, and reset behavior.
+        /// </summary>
         [Test]
         public void RuntimeParameters()
         {
@@ -41,6 +47,9 @@ namespace OnRamp.Test
             ClassicAssert.AreEqual("456", ec.GetRuntimeParameter("XXX", "456"));
         }
 
+        /// <summary>
+        /// Verifies merging replaces matching keys and preserves unrelated parameters.
+        /// </summary>
         [Test]
         public void MergeRuntimeParameters()
         {
@@ -61,6 +70,9 @@ namespace OnRamp.Test
             ClassicAssert.AreEqual("ABC", ec.GetRuntimeParameter<string>("ZZZ"));
         }
 
+        /// <summary>
+        /// Verifies local time falls within the inclusive observation interval.
+        /// </summary>
         [Test]
         public void DateTimeNow()
         {
@@ -68,10 +80,13 @@ namespace OnRamp.Test
 
             var ec = new EntityConfig();
             var dtn = ec.DateTimeNow;
-            ClassicAssert.IsTrue(dtn > now);
+            Assert.That(dtn, Is.InRange(now, DateTime.Now));
             ClassicAssert.AreEqual(DateTimeKind.Local, dtn.Kind);
         }
 
+        /// <summary>
+        /// Verifies UTC time falls within the inclusive observation interval.
+        /// </summary>
         [Test]
         public void DateTimeUtcNow()
         {
@@ -79,17 +94,26 @@ namespace OnRamp.Test
 
             var ec = new EntityConfig();
             var dtn = ec.DateTimeUtcNow;
-            ClassicAssert.IsTrue(dtn > now);
+            Assert.That(dtn, Is.InRange(now, DateTime.UtcNow));
             ClassicAssert.AreEqual(DateTimeKind.Utc, dtn.Kind);
         }
 
+        /// <summary>
+        /// Verifies generated identifiers are nonempty and distinct.
+        /// </summary>
         [Test]
         public void NewGuid()
         {
             var ec = new EntityConfig();
-            ClassicAssert.AreNotEqual(ec.NewGuid, ec.NewGuid);
+            var first = ec.NewGuid;
+            var second = ec.NewGuid;
+            Assert.That(first, Is.Not.EqualTo(Guid.Empty));
+            Assert.That(second, Is.Not.EqualTo(Guid.Empty).And.Not.EqualTo(first));
         }
 
+        /// <summary>
+        /// Verifies generation selects the root instance exactly once.
+        /// </summary>
         [Test]
         public void SelectGenResult()
         {

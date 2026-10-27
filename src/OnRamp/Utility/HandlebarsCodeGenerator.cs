@@ -11,7 +11,10 @@ namespace OnRamp.Utility
     /// </summary>
     public class HandlebarsCodeGenerator
     {
-        private readonly HandlebarsTemplate<object?, object?> _template;
+        /// <summary>
+        /// The compiled template reused for generation.
+        /// </summary>
+        private readonly HandlebarsTemplate<object, object> _template;
 
         /// <summary>
         /// Static constructor.

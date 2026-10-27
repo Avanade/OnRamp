@@ -45,5 +45,11 @@ namespace OnRamp.Config
         /// Gets or sets the list of option values.
         /// </summary>
         public string[]? Options { get; set; }
+
+        /// <summary>
+        /// Gets or sets the permitted JSON scalar types for reference generation only.
+        /// </summary>
+        /// <remarks>Defaults to <c>null</c> to infer the existing CLR mapping. Explicit declarations must be nonempty and compatible with the CLR type; <c>JsonElement</c> requires an explicit declaration. Nullable CLR types do not add JSON null. Types are deduplicated and ordered as declared by <see cref="CodeGenJsonType"/>.</remarks>
+        public CodeGenJsonType[]? JsonTypes { get; set; }
     }
 }

@@ -14,7 +14,7 @@ namespace OnRamp.Utility
     /// <summary>
     /// Represents a <c>JsonSchema</c> <see cref="Generate{T}(Stream, string?)">generator</see>.
     /// </summary>
-    /// <remarks>See <see href="https://json-schema.org/"/> and <see href="https://www.schemastore.org/json/"/>.</remarks>
+    /// <remarks>See <see href="https://json-schema.org/"/> and <see href="https://www.schemastore.org/json/"/>. Traverses configuration objects and collections once per type, including cycles. Child references use draft-04-compatible <c>allOf</c> wrappers. Explicit scalar declarations and <see cref="System.ComponentModel.DefaultValueAttribute"/> affect references only; no configuration instances are constructed or prepared.</remarks>
     public static class JsonSchemaGenerator
     {
         /// <summary>
@@ -38,8 +38,7 @@ namespace OnRamp.Utility
         public static void Generate<T>(Stream stream, string? title = null) where T : ConfigBase, IRootConfig
         {
             var type = typeof(T);
-            var types = new List<Type> { type };
-            FindAllTypes(types, typeof(T));
+            var types = ReferenceGeneration.FindTypes(type);
 
             using var jtw = new Utf8JsonWriter(stream ?? throw new ArgumentNullException(nameof(stream)), new JsonWriterOptions { Indented = true });
 
@@ -58,7 +57,7 @@ namespace OnRamp.Utility
             jtw.WriteStartArray();
             jtw.WriteStartObject();
             jtw.WritePropertyName("$ref");
-            jtw.WriteStringValue($"#/definitions/{type.GetCustomAttribute<CodeGenClassAttribute>()?.Name}");
+            jtw.WriteStringValue(ReferenceGeneration.GetReference(type));
             jtw.WriteEndObject();
             jtw.WriteEndArray();
 
@@ -66,34 +65,11 @@ namespace OnRamp.Utility
         }
 
         /// <summary>
-        /// Recursively find all types (definitions).
-        /// </summary>
-        private static void FindAllTypes(List<Type> types, Type type)
-        {
-            foreach (var pi in type.GetProperties())
-            {
-                var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>();
-                if (pcsa != null)
-                {
-                    if (pi.PropertyType == typeof(List<string>))
-                        continue;
-
-                    var t = GetItemType(pi.PropertyType);
-                    if (types.Contains(t))
-                        continue;
-
-                    types.Add(t);
-                    FindAllTypes(types, t);
-                }
-            }
-        }
-
-        /// <summary>
         /// Writes the object definition.
         /// </summary>
         private static void WriteDefinition(Type type, Utf8JsonWriter jtw)
         {
-            var csa = type.GetCustomAttribute<CodeGenClassAttribute>() ?? throw new InvalidOperationException($"Type {type.Name} does not have required ClassSchemaAttribute defined.");
+            var csa = ReferenceGeneration.GetClass(type);
             jtw.WritePropertyName(csa.Name);
             jtw.WriteStartObject();
             jtw.WritePropertyName("type");
@@ -122,10 +98,15 @@ namespace OnRamp.Utility
                 jtw.WriteStartObject();
 
                 var psa = pi.GetCustomAttribute<CodeGenPropertyAttribute>();
+                var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>();
+                var property = ReferenceGeneration.GetProperty(pi, psa, pcsa);
+                if (psa?.IsMandatory == true || pcsa?.IsMandatory == true)
+                    rqd.Add(name);
+
                 if (psa != null)
                 {
-                    jtw.WritePropertyName("type");
-                    jtw.WriteStringValue(GetJsonType(pi));
+                    if (property.ChildType == null)
+                        WriteJsonTypes(jtw, property.JsonTypes!);
                     jtw.WritePropertyName("title");
                     jtw.WriteStringValue(CleanString(psa.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (psa.Description != null)
@@ -134,8 +115,13 @@ namespace OnRamp.Utility
                         jtw.WriteStringValue(CleanString(psa.Description));
                     }
 
-                    if (psa.IsMandatory)
-                        rqd.Add(name);
+                    if (property.ChildType != null)
+                    {
+                        jtw.WritePropertyName("allOf");
+                        jtw.WriteStartArray();
+                        WriteReference(jtw, property.ChildType);
+                        jtw.WriteEndArray();
+                    }
 
                     if (psa.Options != null)
                     {
@@ -150,17 +136,19 @@ namespace OnRamp.Utility
                 }
                 else
                 {
-                    var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>() ?? throw new InvalidOperationException($"Type '{type.Name}' Property '{pi.Name}' does not have a required PropertySchemaAttribute or PropertyCollectionSchemaAttribute.");
                     jtw.WritePropertyName("type");
                     jtw.WriteStartArray();
                     jtw.WriteStringValue("array");
                     jtw.WriteStringValue("null");
                     jtw.WriteEndArray();
-                    jtw.WritePropertyName("default");
-                    jtw.WriteStartArray();
-                    jtw.WriteEndArray();
+                    if (property.DefaultJson == null)
+                    {
+                        jtw.WritePropertyName("default");
+                        jtw.WriteStartArray();
+                        jtw.WriteEndArray();
+                    }
                     jtw.WritePropertyName("title");
-                    jtw.WriteStringValue(CleanString(pcsa.Title) ?? StringConverter.ToSentenceCase(name)!);
+                    jtw.WriteStringValue(CleanString(pcsa!.Title) ?? StringConverter.ToSentenceCase(name)!);
                     if (pcsa.Description != null)
                     {
                         jtw.WritePropertyName("description");
@@ -169,22 +157,20 @@ namespace OnRamp.Utility
 
                     jtw.WritePropertyName("items");
 
-                    if (pi.PropertyType == typeof(List<string>))
+                    if (property.ChildType == null)
                     {
                         jtw.WriteStartObject();
-                        jtw.WritePropertyName("type");
-                        jtw.WriteStringValue("string");
+                        WriteJsonTypes(jtw, property.JsonTypes!);
                         jtw.WriteEndObject();
                     }
                     else
-                    {
-                        var t = GetItemType(pi.PropertyType);
+                        WriteReference(jtw, property.ChildType);
+                }
 
-                        jtw.WriteStartObject();
-                        jtw.WritePropertyName("$ref");
-                        jtw.WriteStringValue($"#/definitions/{t.GetCustomAttribute<CodeGenClassAttribute>()!.Name}");
-                        jtw.WriteEndObject();
-                    }
+                if (property.DefaultJson != null)
+                {
+                    jtw.WritePropertyName("default");
+                    jtw.WriteRawValue(property.DefaultJson);
                 }
 
                 jtw.WriteEndObject();
@@ -207,18 +193,30 @@ namespace OnRamp.Utility
         }
 
         /// <summary>
-        /// Gets the corresponding JSON type for the property.
+        /// Writes a scalar type or union.
         /// </summary>
-        private static string GetJsonType(PropertyInfo pi)
+        private static void WriteJsonTypes(Utf8JsonWriter jtw, string[] types)
         {
-            return pi.PropertyType switch
+            jtw.WritePropertyName("type");
+            if (types.Length == 1)
+                jtw.WriteStringValue(types[0]);
+            else
             {
-                Type t when t == typeof(string) => "string",
-                Type t when t == typeof(bool?) => "boolean",
-                Type t when t == typeof(int?) => "integer",
-                Type t when t == typeof(decimal?) => "number",
-                _ => throw new InvalidOperationException($"Type '{pi.DeclaringType?.Name}' Property '{pi.Name}' has a Type '{pi.PropertyType.Name}' that is not supported."),
-            };
+                jtw.WriteStartArray();
+                foreach (var type in types)
+                    jtw.WriteStringValue(type);
+                jtw.WriteEndArray();
+            }
+        }
+
+        /// <summary>
+        /// Writes a configuration reference.
+        /// </summary>
+        private static void WriteReference(Utf8JsonWriter jtw, Type type)
+        {
+            jtw.WriteStartObject();
+            jtw.WriteString("$ref", ReferenceGeneration.GetReference(type));
+            jtw.WriteEndObject();
         }
 
         /// <summary>
@@ -232,9 +230,9 @@ namespace OnRamp.Utility
             if (type.IsArray)
                 return type.GetElementType() ?? throw new InvalidOperationException($"Type {type.Name} is an Array but the Element Type is unable to be determined.");
 
-            var t = type.GetInterfaces().FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
+            var t = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ICollection<>) ? type : type.GetInterfaces().FirstOrDefault(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>));
             if (t != null)
-                return ((t == typeof(ICollection<>)) ? type : t).GetGenericArguments()[0];
+                return t.GetGenericArguments()[0];
 
             throw new InvalidOperationException($"Type {type.Name} must be an Array or ICollection<T>.");
         }
