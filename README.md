@@ -75,6 +75,7 @@ Attribute | Description
 [`CodeGenCategoryAttribute`](./src/OnRamp/Config/CodeGenCategoryAttribute.cs) | Defines one or more documentation categories for a .NET class.
 [`CodeGenPropertyAttribute`](./src/OnRamp/Config/CodeGenPropertyAttribute.cs) | Defines validation (`IsMandatory`, `IsUnique` and `Options`) and documentation for a property (non-collection).
 [`CodeGenPropertyCollectionAttribute`](./src/OnRamp/Config/CodeGenPropertyCollectionAttribute.cs) | Defines validation (`IsMandatory`) and documentation for a collection property.
+[`CodeGenJsonType`](./src/OnRamp/Config/CodeGenJsonType.cs) | Defines explicit non-null scalar types for generated references through `CodeGenPropertyAttribute.JsonTypes` or `CodeGenPropertyCollectionAttribute.ItemJsonTypes`; does not change runtime validation.
 
 The configuration must also use the `System.Text.Json` [serializer attributes](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/customize-properties) as [`System.Text.Json`](https://learn.microsoft.com/en-us/dotnet/standard/serialization/) is used internally to perform all JSON deserialization.
 
@@ -387,6 +388,84 @@ Class | Description
 [`JsonSchemaGenerator`](./src/OnRamp/Utility/JsonSchemaGenerator.cs) | Provides the capability to generate a [JSON Schema](https://json-schema.org/) from the [configuration](#Configuration). This can then be published to the likes of the [JSON Schema Store](https://www.schemastore.org/) so that it can be used in Visual Studio and Visual Studio Code (or other editor of choice) to provide editor intellisense and basic validation.
 [`MarkdownDocumentationGenerator`](./src/OnRamp/Utility/MarkdownDocumentationGenerator.cs) | Provides the capability to generate [markdown](https://en.wikipedia.org/wiki/Markdown) documentation files from the [configuration](#Configuration). These can then be published within the owning source code repository or to a wiki to provide corresponding documentation.
 [`StringConverter`](./src/OnRamp/Utility/StringConverter.cs) | Provides additional string conversions that are useful where generating code; for example: `ToCamelCase`, `ToPascalCase`, `ToPrivateCase`, `ToSentenceCase`, `ToSnakeCase`, `ToKebabCase`, `ToPastTense`, `ToPlural`, `ToSingle`, `ToComments` and `ToSeeComments`.
+
+<br/>
+
+### Configuration reference generation
+
+The built-in generators follow both single-valued configuration children and collections of configuration children. Each child derives from `ConfigBase` and declares its own `CodeGenClass` and documentation categories:
+
+```csharp
+[JsonPropertyName("source")]
+[CodeGenProperty("Primary", Title = "Interface source.", IsMandatory = true)]
+public SourceConfig? Source { get; set; }
+```
+
+`JsonSchemaGenerator` emits an object reference, not an array. It uses `allOf` around child references so property-specific titles, descriptions, and defaults work with JSON Schema draft-04 (siblings of a direct `$ref` would be ignored). `IsMandatory` puts a single child in the containing object's `required` array; an optional child can be omitted but does not automatically accept an explicit JSON null.
+
+`MarkdownDocumentationGenerator` links the property to the child's page and distinguishes objects from collections. Both generators visit each configuration type once per invocation and support repeated and cyclic references. Different CLR types claiming the same `CodeGenClass.Name` fail with a generation error rather than producing ambiguous definitions or pages. Markdown retains custom filenames and callbacks: `fileCreation` runs once per generated page, and `propertyData` runs for every documented property on that page.
+
+#### Explicit scalar types
+
+Use `JsonTypes` for a property's value or `ItemJsonTypes` for collection items. These declarations are required for `JsonElement`, which otherwise could represent any JSON shape:
+
+```csharp
+[JsonPropertyName("min")]
+[CodeGenProperty("Primary", Title = "Inclusive minimum value.",
+    JsonTypes = new[] { CodeGenJsonType.String, CodeGenJsonType.Number })]
+public JsonElement Min { get; set; }
+
+[JsonPropertyName("options")]
+[CodeGenPropertyCollection("Primary", Title = "Allowed values.",
+    ItemJsonTypes = new[] {
+        CodeGenJsonType.String, CodeGenJsonType.Number, CodeGenJsonType.Boolean })]
+public List<JsonElement>? Options { get; set; }
+```
+
+The generated schema for these properties includes:
+
+```json
+"min": {
+  "type": ["string", "number"],
+  "title": "Inclusive minimum value."
+},
+"options": {
+  "type": ["array", "null"],
+  "default": [],
+  "title": "Allowed values.",
+  "items": { "type": ["string", "number", "boolean"] }
+}
+```
+
+Collections retain OnRamp's existing array-or-null type and implicit empty-array default. Their individual scalar items do **not** accept null, objects, or arrays. Explicit scalar items are documented as scalar types, without linked configuration pages or `CodeGenClass` requirements.
+
+CLR type | Permitted explicit JSON types
+-|-
+`JsonElement` | Any union of `String`, `Number`, `Integer`, `Boolean`
+`string` | `String` only
+`bool` | `Boolean` only
+`byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong` | `Integer`, `Number`, or both
+`decimal`, `float`, `double` | `Number` only
+
+Nullable CLR types follow the underlying type without adding JSON null. `Number` already includes integers; specifying both `Number` and `Integer` is valid but redundant. Duplicate types are removed and emitted in this fixed order: `String`, `Number`, `Integer`, `Boolean`. One remaining type is emitted as a string rather than a union array.
+
+A null declaration retains existing inference (`string`, `bool?`, `int?`, `decimal?`, string collections, and configuration children/collections). An explicitly empty declaration, undefined enum value, incompatible CLR declaration, unsupported inferred type, or scalar declaration on configuration objects/items fails clearly in **both** generators. These options affect generated references only, not configuration deserialization, preparation, or runtime validation.
+
+#### Declared defaults
+
+Both generators read `System.ComponentModel.DefaultValueAttribute`:
+
+```csharp
+[DefaultValue("AzureServiceBus")]
+[JsonPropertyName("type")]
+[CodeGenProperty("Primary", Title = "Source type.",
+    Options = new[] { "AzureServiceBus" })]
+public string? Type { get; set; }
+```
+
+The schema includes `"default": "AzureServiceBus"` and Markdown shows `Default: "AzureServiceBus"`. Defaults preserve string casing and JSON value types, including Boolean/numeric values and explicit `[DefaultValue(null)]`. A declared collection default replaces the implicit `[]` annotation. A value that cannot be serialized as JSON causes a contextual generation error; it is never quietly converted to a string.
+
+Generation reads metadata only: it does not construct configuration objects, invoke their getters, or call preparation logic. Defaults are annotations, not applied values; consumers remain responsible for their own preparation/defaulting logic.
 
 <br/>
 

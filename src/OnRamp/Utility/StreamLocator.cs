@@ -179,7 +179,7 @@ namespace OnRamp.Utility
 
             if (!string.IsNullOrEmpty(contentType))
             {
-                fi = new FileInfo(Path.Combine(fi.DirectoryName, contentType, fileName));
+                fi = new FileInfo(Path.Combine(fi.DirectoryName, contentType, fi.Name));
                 if (fi.Exists)
                     return true;
 

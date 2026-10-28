@@ -7,7 +7,7 @@ namespace OnRamp.Config
     /// <summary>
     /// Represents the <i>code-generation</i> property collection configuration.
     /// </summary>
-    /// <remarks>The property should be either a <c>List&lt;string&gt;</c> or <c>List&lt;T&gt;</c> where <c>T</c> inherits from <see cref="ConfigBase"/>.</remarks>
+    /// <remarks>The property should be a collection of strings or <see cref="ConfigBase"/> objects, or have explicitly declared scalar <see cref="ItemJsonTypes"/> for reference generation.</remarks>
     /// <param name="category">The grouping category.</param>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public sealed class CodeGenPropertyCollectionAttribute(string category) : Attribute
@@ -41,5 +41,11 @@ namespace OnRamp.Config
         /// Inidicates whether the property is considered important.
         /// </summary>
         public bool IsImportant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the permitted JSON scalar types for collection items, for reference generation only.
+        /// </summary>
+        /// <remarks>Defaults to <c>null</c> to infer the existing item mapping. Explicit declarations must be nonempty and compatible with the item CLR type; <c>JsonElement</c> items require an explicit declaration. Item types never implicitly include null. Types are deduplicated and ordered as declared by <see cref="CodeGenJsonType"/>.</remarks>
+        public CodeGenJsonType[]? ItemJsonTypes { get; set; }
     }
 }

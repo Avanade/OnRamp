@@ -2,6 +2,17 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.0
+- *Maintenance:* Updated the NuGet publishing script from the CoreEx template: build before packing, isolate each run's packages, preserve existing feed contents, check command failures, and clear matching local cache versions by default (opt out with `-DeleteFromlocalCache:$false`).
+- *Enhancement:* Schema and Markdown reference generation now follow single-valued configuration children, deduplicate repeated types, handle cycles, and reject conflicting configuration names. Child schema references preserve draft-04 annotations using `allOf`.
+- *Enhancement:* Added `CodeGenJsonType`, `CodeGenPropertyAttribute.JsonTypes`, and `CodeGenPropertyCollectionAttribute.ItemJsonTypes` for explicit scalar references, including `JsonElement` values and collection items.
+- *Enhancement:* Generated references include typed `DefaultValueAttribute` annotations, including explicit nulls, without constructing or preparing configuration objects.
+- *Maintenance:* Updated Handlebars.Net to 2.4.3, YamlDotNet to 18.1.0, NUnit to 4.6.1, and both Coverlet packages to 6.0.4. Updated Microsoft.NET.Test.Sdk to 17.13.0 to retain .NET 6 test compatibility; target frameworks and dependency major versions are unchanged.
+- *Fixed:* `StringConverter.ToComments` supports nested generic references without interpreting generated braces as comment delimiters.
+- *Fixed:* Stream existence checks use the same content-folder paths as stream readers for qualified file names, including extension probing.
+- *Fixed:* JSON Schema generation honors `IsMandatory` for configuration, explicitly typed scalar, and string collections. This requires property presence only; collections still allow null and empty arrays and retain their existing defaults.
+- *Fixed:* Handlebars mutation helpers report null contexts explicitly, and formatting helpers report null format arguments instead of throwing null-reference errors.
+
 ## v2.2.5
 - *Fixed:* The generated schema for arrays has been updated to allow of nulls.
 - *Fixed:* All dependencies updated to the latest version where applicable (minimize breaking changes).

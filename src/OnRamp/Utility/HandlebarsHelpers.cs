@@ -210,16 +210,17 @@ namespace OnRamp.Utility
                 if (args[0] is not string name)
                     throw new CodeGenException("Handlebars template invokes function 'set-value' where the first argument must be a string, being the property name.");
 
-                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty)
-                    ?? throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
+                var value = context.Value ?? throw new CodeGenException("Handlebars template invokes function 'set-value' with a null context.");
+                var pi = value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty)
+                    ?? throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' does not exist for Type {value.GetType().Name}.");
 
                 try
                 {
-                    pi.SetValue(context.Value, args[1]);
+                    pi.SetValue(value, args[1]);
                 }
                 catch (Exception ex)
                 {
-                    throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' for Type {context.Value.GetType().Name} had a set value error: {ex.Message}");
+                    throw new CodeGenException($"Handlebars template invokes function 'set-value' where the property '{name}' for Type {value.GetType().Name} had a set value error: {ex.Message}");
                 }
             });
 
@@ -230,17 +231,18 @@ namespace OnRamp.Utility
                 if (args[0] is not string name)
                     throw new CodeGenException("Handlebars template invokes function 'add-value' where the first argument must be a string, being the property name.");
 
-                var pi = context.Value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty) 
-                    ?? throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' does not exist for Type {context.Value.GetType().Name}.");
+                var value = context.Value ?? throw new CodeGenException("Handlebars template invokes function 'add-value' with a null context.");
+                var pi = value.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty | BindingFlags.SetProperty)
+                    ?? throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' does not exist for Type {value.GetType().Name}.");
 
                 decimal sum = 0;
                 try
                 {
-                    sum += (decimal)pi.GetValue(context.Value);
+                    sum += (decimal)pi.GetValue(value);
                 }
                 catch (Exception ex)
                 {
-                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' for Type {context.Value.GetType().Name} had a get value error: {ex.Message}");
+                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' for Type {value.GetType().Name} had a get value error: {ex.Message}");
                 }
 
                 if (args.Length == 1)
@@ -260,11 +262,11 @@ namespace OnRamp.Utility
 
                 try
                 {
-                    pi.SetValue(context.Value, sum);
+                    pi.SetValue(value, sum);
                 }
                 catch (Exception ex)
                 {
-                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' for Type {context.Value.GetType().Name} had a set value error: {ex.Message}");
+                    throw new CodeGenException($"Handlebars template invokes function 'add-value' where the property '{name}' for Type {value.GetType().Name} had a set value error: {ex.Message}");
                 }
             });
         }
@@ -357,7 +359,7 @@ namespace OnRamp.Utility
         /// <summary>
         /// Converts the rval to match the lval type.
         /// </summary>
-        private static object? RValConvert(object lval, object rval)
+        private static object? RValConvert(object? lval, object? rval)
         {
             if (lval == null || rval == null)
                 return rval;
@@ -380,10 +382,11 @@ namespace OnRamp.Utility
         {
             if (parameters.Length == 0)
                 return null;
-            else if (parameters.Length == 1)
-                return parameters[0].ToString();
-            else
-                return string.Format(parameters[0].ToString()!, parameters.TakeLast(parameters.Length - 1).ToArray());
+
+            var format = parameters[0] ?? throw new CodeGenException("Handlebars template requires a non-null format argument.");
+            return parameters.Length == 1
+                ? format.ToString()
+                : string.Format(format.ToString()!, parameters.TakeLast(parameters.Length - 1).ToArray());
         }
     }
 }

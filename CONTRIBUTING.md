@@ -50,6 +50,22 @@ We use [`NUnit`](https://github.com/nunit/nunit) for all unit testing.
 
 We understand there is more work to be performed in generating a higher level of code coverage; this technical debt is on the backlog.
 
+Run the suite from the repository root:
+
+```powershell
+dotnet test tests\OnRamp.Test\OnRamp.Test.csproj
+```
+
+The test project already includes Coverlet. To collect line and branch coverage without additional tooling:
+
+```powershell
+dotnet test tests\OnRamp.Test\OnRamp.Test.csproj --collect:"XPlat Code Coverage"
+```
+
+Use focused `--filter` selections while developing, then run the full suite. Prefer assertions on observable results, error context, and absence of unwanted side effects rather than only checking that an object is non-null.
+
+File-writing tests should use the disposable `TestDirectory` helper instead of shared output names or changes to the process working directory. Restore any changed culture, environment variables, or static configuration in `finally` blocks; tests changing shared static state must not run in parallel. Compare clock values within an inclusive observation interval rather than requiring consecutive reads to differ. Document new test classes and members with XML summaries.
+
 <br/>
 
 ## Code reviews and checkins

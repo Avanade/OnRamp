@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OnRamp.Utility
@@ -157,23 +158,28 @@ namespace OnRamp.Utility
             if (string.IsNullOrEmpty(text))
                 return text;
 
-            var s = text;
+            var result = new StringBuilder(text.Length);
+            var position = 0;
             while (true)
             {
-                var start = s.IndexOf("{{", StringComparison.InvariantCultureIgnoreCase);
-                var end = s.IndexOf("}}", StringComparison.InvariantCultureIgnoreCase);
+                var start = text.IndexOf("{{", position, StringComparison.Ordinal);
+                var end = text.IndexOf("}}", position, StringComparison.Ordinal);
 
                 if (start < 0 && end < 0)
+                {
+                    result.Append(text, position, text.Length - position);
                     break;
+                }
 
                 if (start < 0 || end < 0 || end < start)
                     throw new CodeGenException("Start and End {{ }} parameter mismatch.", text);
 
-                var sub = s.Substring(start, end - start + 2);
-                s = s.Replace(sub, ToSeeComments(sub[2..^2]));
+                result.Append(text, position, start - position);
+                result.Append(ToSeeComments(text.Substring(start + 2, end - start - 2)));
+                position = end + 2;
             }
 
-            return s;
+            return result.ToString();
         }
 
         /// <summary>
