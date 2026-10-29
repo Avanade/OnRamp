@@ -103,6 +103,113 @@ namespace OnRamp.Test
         }
 
         /// <summary>
+        /// Verifies YAML string escapes round-trip through both YAML conversion APIs.
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void YamlEscapedStringsRoundTrip(bool generic)
+        {
+            var escapedValues = new (string Yaml, string Expected)[]
+            {
+                ("\"\\0\"", "\0"),
+                ("\"\\a\"", "\a"),
+                ("\"\\b\"", "\b"),
+                ("\"\\t\"", "\t"),
+                ("\"\\n\"", "\n"),
+                ("\"\\v\"", "\v"),
+                ("\"\\f\"", "\f"),
+                ("\"\\r\"", "\r"),
+                ("\"\\e\"", "\u001b"),
+                ("\"\\N\"", "\u0085"),
+                ("\"\\_\"", "\u00a0"),
+                ("\"\\L\"", "\u2028"),
+                ("\"\\P\"", "\u2029"),
+                ("\"\\x01\"", "\u0001"),
+                ("\"\\\"\"", "\""),
+                ("\"\\\\\"", "\\"),
+                ("'\\t'", @"\t")
+            };
+
+            foreach (var (yaml, expected) in escapedValues)
+            {
+                using var nodeReader = new StringReader($"value: {yaml}");
+                var nodeValue = nodeReader.YamlToJsonNode()["value"].GetValue<string>();
+                Assert.That(nodeValue, Is.EqualTo(expected), $"JsonNode conversion for {yaml}");
+
+                using var modelReader = new StringReader($"value: {yaml}");
+                var model = generic
+                    ? modelReader.DeserializeYaml<Dictionary<string, string>>()
+                    : (Dictionary<string, string>)modelReader.DeserializeYaml(typeof(Dictionary<string, string>));
+                Assert.That(model["value"], Is.EqualTo(expected), $"Typed conversion for {yaml}");
+            }
+        }
+
+        /// <summary>
+        /// Verifies YAML map keys and nested values retain JSON types and invariant key formatting.
+        /// </summary>
+        [Test]
+        public void YamlNestedValuesAndTypedMapKeysArePreserved()
+        {
+            using var reader = new StringReader(
+                "true: {nested: [42, 12.5, '42', 0123, null]}\n" +
+                "false: value\n" +
+                "42: number-key\n");
+
+            var node = reader.YamlToJsonNode();
+            using var json = JsonDocument.Parse(node.ToJsonString());
+            var root = json.RootElement;
+            Assert.That(root.GetProperty("true").GetProperty("nested")[0].ValueKind, Is.EqualTo(JsonValueKind.Number));
+            Assert.That(root.GetProperty("true").GetProperty("nested")[1].GetDecimal(), Is.EqualTo(12.5m));
+            Assert.That(root.GetProperty("true").GetProperty("nested")[2].GetString(), Is.EqualTo("42"));
+            Assert.That(root.GetProperty("true").GetProperty("nested")[3].GetString(), Is.EqualTo("0123"));
+            Assert.That(root.GetProperty("true").GetProperty("nested")[4].ValueKind, Is.EqualTo(JsonValueKind.Null));
+            Assert.That(root.GetProperty("false").GetString(), Is.EqualTo("value"));
+            Assert.That(root.GetProperty("42").GetString(), Is.EqualTo("number-key"));
+
+            using var modelReader = new StringReader("true: value\nfalse: other\n42: number-key\n");
+            var model = modelReader.DeserializeYaml<Dictionary<string, string>>();
+            Assert.That(model["true"], Is.EqualTo("value"));
+            Assert.That(model["false"], Is.EqualTo("other"));
+            Assert.That(model["42"], Is.EqualTo("number-key"));
+        }
+
+        /// <summary>
+        /// Verifies typed YAML deserialization preserves scalar types and nested collections.
+        /// </summary>
+        [TestCase(true)]
+        [TestCase(false)]
+        public void DeserializeYamlPreservesScalarTypesAndNestedCollections(bool generic)
+        {
+            const string yaml =
+                "text: ordinary\n" +
+                "enabled: true\n" +
+                "count: 42\n" +
+                "amount: 12.5\n" +
+                "quotedNumber: \"42\"\n" +
+                "leadingZero: 0123\n" +
+                "nothing: null\n" +
+                "items:\n" +
+                "- name: First\n" +
+                "  enabled: false\n";
+            using var reader = new StringReader(yaml);
+
+            var value = generic
+                ? reader.DeserializeYaml<YamlTypedValue>()
+                : (YamlTypedValue)reader.DeserializeYaml(typeof(YamlTypedValue));
+
+            Assert.That(value.Text, Is.EqualTo("ordinary"));
+            Assert.That(value.Enabled, Is.True);
+            Assert.That(value.Count, Is.EqualTo(42));
+            Assert.That(value.Amount, Is.EqualTo(12.5m));
+            Assert.That(value.QuotedNumber, Is.EqualTo("42"));
+            Assert.That(value.LeadingZero, Is.EqualTo("0123"));
+            Assert.That(value.Nothing, Is.Null);
+            Assert.That(value.Items, Has.Count.EqualTo(1));
+            Assert.That(value.Items[0].Name, Is.EqualTo("First"));
+            Assert.That(value.Items[0].Enabled, Is.False);
+        }
+
+        /// <summary>
         /// Verifies typed YAML deserialization preserves child collections through both overloads.
         /// </summary>
         [TestCase(true)]
@@ -211,6 +318,30 @@ namespace OnRamp.Test
             /// Gets or sets the numeric value.
             /// </summary>
             public int Count { get; set; }
+        }
+
+        /// <summary>
+        /// Models a typed YAML document with scalar and nested collection values.
+        /// </summary>
+        public class YamlTypedValue
+        {
+            public string Text { get; set; }
+            public bool Enabled { get; set; }
+            public long Count { get; set; }
+            public decimal Amount { get; set; }
+            public string QuotedNumber { get; set; }
+            public string LeadingZero { get; set; }
+            public string Nothing { get; set; }
+            public List<YamlTypedItem> Items { get; set; }
+        }
+
+        /// <summary>
+        /// Models a nested YAML array item.
+        /// </summary>
+        public class YamlTypedItem
+        {
+            public string Name { get; set; }
+            public bool Enabled { get; set; }
         }
     }
 }

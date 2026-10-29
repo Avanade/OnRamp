@@ -40,7 +40,7 @@ namespace OnRamp.Test
         public void A120_Script_InvalidYamlContent()
         {
             var ex = Assert.ThrowsAsync<CodeGenException>(asyncCode: () => CodeGenerator.CreateAsync(new CodeGeneratorArgs("InvalidYamlContent.yaml").AddAssembly(typeof(CodeGeneratorTest).Assembly)));
-            ClassicAssert.AreEqual("Script 'InvalidYamlContent.yaml' is invalid: The JSON value could not be converted to OnRamp.Scripts.CodeGenScript. Path: $ | LineNumber: 0 | BytePositionInLine: 15.", ex.Message);
+            ClassicAssert.AreEqual("Script 'InvalidYamlContent.yaml' is invalid: The JSON value could not be converted to OnRamp.Scripts.CodeGenScript. Path: $ | LineNumber: 0 | BytePositionInLine: 35.", ex.Message);
         }
 
         /// <summary>

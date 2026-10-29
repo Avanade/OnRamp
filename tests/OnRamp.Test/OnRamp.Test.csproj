@@ -31,8 +31,10 @@
     <None Remove="Scripts\InvalidJsonContent.json" />
     <None Remove="Scripts\InvalidYamlContent.yaml" />
     <None Remove="Scripts\ValidEntity.yaml" />
+    <None Remove="Scripts\YamlFileInterface.yaml" />
     <None Remove="Scripts\ValidEntityWithConfigEditor.yaml" />
     <None Remove="Templates\EntityExample.hbs" />
+    <None Remove="Templates\FileDelimiter.hbs" />
     <None Remove="Templates\PropertyExample.hbs" />
   </ItemGroup>
 
@@ -59,8 +61,10 @@
     <EmbeddedResource Include="Scripts\InvalidFileType.xml" />
     <EmbeddedResource Include="Scripts\ValidEntityWithConfigEditor.yaml" />
     <EmbeddedResource Include="Scripts\ValidEntity.yaml" />
+    <EmbeddedResource Include="Scripts\YamlFileInterface.yaml" />
     <EmbeddedResource Include="Templates\PropertyExample.hbs" />
     <EmbeddedResource Include="Templates\EntityExample.hbs" />
+    <EmbeddedResource Include="Templates\FileDelimiter.hbs" />
   </ItemGroup>
 
   <ItemGroup>

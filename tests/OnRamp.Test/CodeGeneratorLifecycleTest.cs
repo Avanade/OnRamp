@@ -43,6 +43,24 @@ namespace OnRamp.Test
         }
 
         /// <summary>
+        /// Verifies a tab delimiter from a YAML interface configuration reaches generated output.
+        /// </summary>
+        [Test]
+        public async Task YamlInterfaceTabDelimiterReachesGeneratedOutput()
+        {
+            using var directory = new TestDirectory();
+            var args = CodeGeneratorArgs.Create<CodeGeneratorLifecycleTest>("YamlFileInterface.yaml")
+                .AddParameter("Directory", directory.DirectoryPath);
+            var generator = await CodeGenerator.CreateAsync(args);
+            using var reader = new StringReader("file:\n  delimiter: \"\\t\"\n");
+
+            var statistics = await generator.GenerateAsync(reader, StreamContentType.Yaml);
+
+            Assert.That(statistics.CreatedCount, Is.EqualTo(1));
+            Assert.That(File.ReadAllText(Path.Combine(directory.DirectoryPath, "delimiter.txt")), Is.EqualTo("\t"));
+        }
+
+        /// <summary>
         /// Verifies configuration stream errors include the supplied source name and do not write output.
         /// </summary>
         [TestCase(StreamContentType.Unknown, "name: Person", "Stream content type is not supported.")]

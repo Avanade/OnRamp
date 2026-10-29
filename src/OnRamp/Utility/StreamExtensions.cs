@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Avanade. Licensed under the MIT License. See https://github.com/Avanade/OnRamp
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
@@ -46,22 +49,8 @@ namespace OnRamp.Utility
         /// <returns>The corresponding value.</returns>
         public static object? DeserializeYaml(this TextReader yaml, Type type)
         {
-            var yml = new DeserializerBuilder().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
-
-#pragma warning disable IDE0063 // Use simple 'using' statement; cannot as need to be more explicit with managing the close and dispose.
-            using (var ms = new MemoryStream())
-            {
-                using (var sw = new StreamWriter(ms))
-                {
-                    sw.Write(new SerializerBuilder().JsonCompatible().Build().Serialize(yml!));
-                    sw.Flush();
-
-                    ms.Position = 0;
-                    using var sr = new StreamReader(ms);
-                    return DeserializeJson(sr, type);
-                }
-            }
-#pragma warning restore IDE0063
+            using var json = new StringReader(DeserializeYamlToJson(yaml));
+            return DeserializeJson(json, type);
         }
 
         /// <summary>
@@ -69,25 +58,7 @@ namespace OnRamp.Utility
         /// </summary>
         /// <param name="yaml">The YAML <see cref="TextReader"/>.</param>
         /// <returns>The <see cref="JsonNode"/>.</returns>
-        public static JsonNode? YamlToJsonNode(this TextReader yaml)
-        {
-            var yml = new DeserializerBuilder().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
-
-#pragma warning disable IDE0063 // Use simple 'using' statement; cannot as need to be more explicit with managing the close and dispose.
-            using (var ms = new MemoryStream())
-            {
-                using (var sw = new StreamWriter(ms))
-                {
-                    sw.Write(new SerializerBuilder().JsonCompatible().Build().Serialize(yml!));
-                    sw.Flush();
-
-                    ms.Position = 0;
-                    using var sr = new StreamReader(ms);
-                    return sr.JsonToJsonNode();
-                }
-            }
-#pragma warning restore IDE0063
-        }
+        public static JsonNode? YamlToJsonNode(this TextReader yaml) => JsonNode.Parse(DeserializeYamlToJson(yaml));
 
         /// <summary>
         /// Converts the <paramref name="json"/> <see cref="TextReader"/> content into a <see cref="JsonNode"/>.
@@ -95,6 +66,44 @@ namespace OnRamp.Utility
         /// <param name="json">The YAML <see cref="TextReader"/>.</param>
         /// <returns>The <see cref="JsonNode"/>.</returns>
         public static JsonNode? JsonToJsonNode(this TextReader json) => JsonNode.Parse(json.ReadToEnd());
+
+        private static string DeserializeYamlToJson(TextReader yaml)
+        {
+            var yml = new DeserializerBuilder().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
+            return System.Text.Json.JsonSerializer.Serialize(ConvertYamlValue(yml));
+        }
+
+        private static object? ConvertYamlValue(object? value)
+        {
+            if (value is IDictionary dictionary)
+            {
+                var result = new Dictionary<string, object?>();
+                foreach (DictionaryEntry entry in dictionary)
+                    result.Add(ConvertYamlKey(entry.Key), ConvertYamlValue(entry.Value));
+
+                return result;
+            }
+
+            if (value is IEnumerable sequence && value is not string)
+            {
+                var result = new List<object?>();
+                foreach (var item in sequence)
+                    result.Add(ConvertYamlValue(item));
+
+                return result;
+            }
+
+            return value;
+        }
+
+        private static string ConvertYamlKey(object? key) => key switch
+        {
+            null => "null",
+            string value => value,
+            bool value => value ? "true" : "false",
+            IFormattable value => value.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty,
+            _ => Convert.ToString(key, CultureInfo.InvariantCulture) ?? string.Empty
+        };
 
         private class YamlNodeTypeResolver : INodeTypeResolver
         {
