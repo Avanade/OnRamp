@@ -1,0 +1,6 @@
+configType: OnRamp.Test.Config.FileInterfaceConfig, OnRamp.Test
+generators:
+- type: OnRamp.Test.Generators.FileInterfaceGenerator, OnRamp.Test
+  template: FileDelimiter.hbs
+  file: delimiter.txt
+  directory: "{{lookup RuntimeParameters 'Directory'}}"

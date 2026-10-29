@@ -2,6 +2,9 @@
 
 Represents the **NuGet** versions.
 
+## v2.3.1
+- *Fixed:* YAML-to-JSON conversion now correctly escapes control characters, including tabs, in both `YamlToJsonNode` and `DeserializeYaml`.
+
 ## v2.3.0
 - *Maintenance:* Updated the NuGet publishing script from the CoreEx template: build before packing, isolate each run's packages, preserve existing feed contents, check command failures, and clear matching local cache versions by default (opt out with `-DeleteFromlocalCache:$false`).
 - *Enhancement:* Schema and Markdown reference generation now follow single-valued configuration children, deduplicate repeated types, handle cycles, and reject conflicting configuration names. Child schema references preserve draft-04 annotations using `allOf`.
