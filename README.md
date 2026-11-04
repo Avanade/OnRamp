@@ -75,9 +75,38 @@ Attribute | Description
 [`CodeGenCategoryAttribute`](./src/OnRamp/Config/CodeGenCategoryAttribute.cs) | Defines one or more documentation categories for a .NET class.
 [`CodeGenPropertyAttribute`](./src/OnRamp/Config/CodeGenPropertyAttribute.cs) | Defines validation (`IsMandatory`, `IsUnique` and `Options`) and documentation for a property (non-collection).
 [`CodeGenPropertyCollectionAttribute`](./src/OnRamp/Config/CodeGenPropertyCollectionAttribute.cs) | Defines validation (`IsMandatory`) and documentation for a collection property.
+[`CodeGenPropertyMapAttribute`](./src/OnRamp/Config/CodeGenPropertyMapAttribute.cs) | Defines mandatory and documentation metadata for a string-keyed map of configuration objects.
 [`CodeGenJsonType`](./src/OnRamp/Config/CodeGenJsonType.cs) | Defines explicit non-null scalar types for generated references through `CodeGenPropertyAttribute.JsonTypes` or `CodeGenPropertyCollectionAttribute.ItemJsonTypes`; does not change runtime validation.
 
+For a map of configuration objects, annotate the property and prepare it from `PrepareAsync`:
+
+```csharp
+[JsonPropertyName("types")]
+[CodeGenPropertyMap("Primary", Title = "Record definitions.", IsMandatory = true)]
+public Dictionary<string, TypeConfig>? Types { get; set; }
+
+protected override async Task PrepareAsync()
+{
+    Types = await PrepareMapAsync(Types, nameof(Types)).ConfigureAwait(false);
+}
+```
+
+`PrepareMapAsync` supports `Dictionary<string, TConfig>` where `TConfig` derives from `ConfigBase`. It preserves the dictionary instance and keys, prepares each value with the current root and parent, exposes its key as `MapEntryKey`, and applies `IsUnique` validation across values. The map can be required and is followed by both reference generators. YAML input with duplicate mapping keys is rejected by both YAML reader paths.
+
 The configuration must also use the `System.Text.Json` [serializer attributes](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/customize-properties) as [`System.Text.Json`](https://learn.microsoft.com/en-us/dotnet/standard/serialization/) is used internally to perform all JSON deserialization.
+
+For stricter, opt-in validation inside your configuration's `PrepareAsync`, use:
+
+```csharp
+RejectUnknownProperties();
+Name = RequireText(nameof(Name), Name);
+```
+
+These public instance methods on `ConfigBase` use the current configuration for qualified diagnostics. `RequireText` rejects null, empty, and whitespace-only strings without trimming accepted values. `RejectUnknownProperties` checks only the current object's `ExtraProperties` and reports the first unknown key in ordinal order. Neither guard changes automatic `IsMandatory` or `Options` validation; extension properties remain supported unless explicitly rejected.
+
+`ConfigBase.DefaultWhereNull` supports nullable `long` values alongside the existing overloads. Its factory is evaluated (and required to be non-null) only when the supplied value is null. Scalar `long` and `long?` properties infer JSON Schema `integer` in both reference generators; nullable CLR properties do not implicitly add JSON `null`. Compatible explicit `JsonTypes` declarations remain supported.
+
+For generated C# source, `OnRamp.Utility.CSharpSource.StringLiteral(value)` returns a complete quoted regular string literal, not just escaped content. Output is deterministic and ASCII-only, with non-ASCII UTF-16 code units escaped individually, preserving surrogate pairs and lone surrogates without normalization. Null input throws `ArgumentNullException`. Identifier and namespace validation are not provided.
 
 <br/>
 
@@ -387,6 +416,7 @@ Class | Description
 -|-
 [`JsonSchemaGenerator`](./src/OnRamp/Utility/JsonSchemaGenerator.cs) | Provides the capability to generate a [JSON Schema](https://json-schema.org/) from the [configuration](#Configuration). This can then be published to the likes of the [JSON Schema Store](https://www.schemastore.org/) so that it can be used in Visual Studio and Visual Studio Code (or other editor of choice) to provide editor intellisense and basic validation.
 [`MarkdownDocumentationGenerator`](./src/OnRamp/Utility/MarkdownDocumentationGenerator.cs) | Provides the capability to generate [markdown](https://en.wikipedia.org/wiki/Markdown) documentation files from the [configuration](#Configuration). These can then be published within the owning source code repository or to a wiki to provide corresponding documentation.
+[`CSharpSource`](./src/OnRamp/Utility/CSharpSource.cs) | Emits complete quoted C# string literals while preserving every UTF-16 code unit.
 [`StringConverter`](./src/OnRamp/Utility/StringConverter.cs) | Provides additional string conversions that are useful where generating code; for example: `ToCamelCase`, `ToPascalCase`, `ToPrivateCase`, `ToSentenceCase`, `ToSnakeCase`, `ToKebabCase`, `ToPastTense`, `ToPlural`, `ToSingle`, `ToComments` and `ToSeeComments`.
 
 <br/>
@@ -401,7 +431,7 @@ The built-in generators follow both single-valued configuration children and col
 public SourceConfig? Source { get; set; }
 ```
 
-`JsonSchemaGenerator` emits an object reference, not an array. It uses `allOf` around child references so property-specific titles, descriptions, and defaults work with JSON Schema draft-04 (siblings of a direct `$ref` would be ignored). `IsMandatory` puts a single child in the containing object's `required` array; an optional child can be omitted but does not automatically accept an explicit JSON null.
+`JsonSchemaGenerator` emits an object reference, not an array. It uses `allOf` around child references so property-specific titles, descriptions, and defaults work with JSON Schema draft-04 (siblings of a direct `$ref` would be ignored). `IsMandatory` puts a single child in the containing object's `required` array; an optional child can be omitted but does not automatically accept an explicit JSON null. String-keyed maps use an object schema with `additionalProperties` referencing the value configuration.
 
 `MarkdownDocumentationGenerator` links the property to the child's page and distinguishes objects from collections. Both generators visit each configuration type once per invocation and support repeated and cyclic references. Different CLR types claiming the same `CodeGenClass.Name` fail with a generation error rather than producing ambiguous definitions or pages. Markdown retains custom filenames and callbacks: `fileCreation` runs once per generated page, and `propertyData` runs for every documented property on that page.
 

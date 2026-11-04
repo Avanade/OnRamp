@@ -42,6 +42,13 @@ namespace OnRamp.Config
         public static int? DefaultWhereNull(int? value, Func<int?> defaultValue) => value ?? (defaultValue ?? throw new ArgumentNullException(nameof(defaultValue)))();
 
         /// <summary>
+        /// Defaults the <see cref="long"/> <paramref name="value"/> where <c>null</c> using the <paramref name="defaultValue"/> function.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="defaultValue">The default value function.</param>
+        public static long? DefaultWhereNull(long? value, Func<long?> defaultValue) => value ?? (defaultValue ?? throw new ArgumentNullException(nameof(defaultValue)))();
+
+        /// <summary>
         /// Defaults the <see cref="decimal"/> <paramref name="value"/> where <c>null</c> using the <paramref name="defaultValue"/> function.
         /// </summary>
         /// <param name="value">The value.</param>
@@ -137,6 +144,48 @@ namespace OnRamp.Config
         public virtual string? QualifiedKeyName { get; }
 
         /// <summary>
+        /// Requires nonblank text and returns the original value without trimming.
+        /// </summary>
+        /// <param name="propertyName">The property name used in diagnostics.</param>
+        /// <param name="value">The value to validate.</param>
+        /// <returns>The original nonblank value.</returns>
+        /// <exception cref="CodeGenException">The value is null, empty, or whitespace-only.</exception>
+        public string RequireText(string propertyName, string? value)
+        {
+            if (propertyName == null)
+                throw new ArgumentNullException(nameof(propertyName));
+            if (string.IsNullOrWhiteSpace(value))
+                throw new CodeGenException(this, propertyName, "Value must contain non-whitespace text.");
+
+            return value!;
+        }
+
+        /// <summary>
+        /// Rejects extension properties, reporting the first key in ordinal order.
+        /// </summary>
+        /// <remarks>Only checks this configuration, not its children. This guard is never invoked automatically;
+        /// configurations using extension properties should not opt in.</remarks>
+        /// <exception cref="CodeGenException">An extension property is present.</exception>
+        public void RejectUnknownProperties()
+        {
+            if (ExtraProperties != null && ExtraProperties.Count > 0)
+                throw new CodeGenException(this, ExtraProperties.Keys.OrderBy(x => x, StringComparer.Ordinal).First(), "Unknown property.");
+        }
+
+        /// <summary>
+        /// Gets the key of this configuration when it is a value in a prepared map.
+        /// </summary>
+        protected string? MapEntryKey { get; private set; }
+
+        internal string? MapEntryPropertyName { get; private set; }
+
+        internal void SetMapEntry(string propertyName, string key)
+        {
+            MapEntryPropertyName = propertyName;
+            MapEntryKey = key;
+        }
+
+        /// <summary>
         /// Build the fully qualified name for the specified <paramref name="propertyName"/>.
         /// </summary>
         /// <param name="propertyName">The property name.</param>
@@ -151,6 +200,12 @@ namespace OnRamp.Config
             while (true)
             {
                 hier.Add(cb.QualifiedKeyName);
+                if (cb.MapEntryPropertyName != null && cb.MapEntryKey != null)
+                {
+                    var key = cb.MapEntryKey.Replace("\\", "\\\\").Replace("'", "\\'");
+                    hier.Add($"{cb.MapEntryPropertyName}['{key}']");
+                }
+
                 if (cb.ParentConfig == null || cb == cb.ParentConfig)
                     break;
 

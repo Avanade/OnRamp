@@ -2,6 +2,14 @@
 
 Represents the **NuGet** versions.
 
+## v2.4.0
+- *Enhancement:* Added explicitly invoked `ConfigBase.RequireText` and `ConfigBase.RejectUnknownProperties` instance guards with qualified diagnostics. Existing mandatory, options, and extension-property behavior is unchanged.
+- *Enhancement:* Added `ConfigBase.DefaultWhereNull(long?, Func<long?>)` with the existing lazy factory semantics.
+- *Enhancement:* JSON Schema and Markdown reference generation now support inferred `long` and `long?` integer properties without adding JSON null or changing existing reference formatting.
+- *Enhancement:* Added `CSharpSource.StringLiteral` to emit complete regular C# literals preserving all UTF-16 code units, including lone surrogates, without a Roslyn dependency.
+- *Enhancement:* Added `CodeGenPropertyMapAttribute` and `PrepareMapAsync` for string-keyed configuration maps, including preparation, qualified map-entry diagnostics, uniqueness checks, and JSON Schema/Markdown reference generation.
+- *Fixed:* YAML duplicate mapping keys are now rejected by both YAML deserialization and YAML-to-JSON conversion.
+
 ## v2.3.1
 - *Fixed:* YAML-to-JSON conversion now correctly escapes control characters, including tabs, in both `YamlToJsonNode` and `DeserializeYaml`.
 

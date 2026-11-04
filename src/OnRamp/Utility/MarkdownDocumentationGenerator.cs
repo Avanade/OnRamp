@@ -13,7 +13,7 @@ namespace OnRamp.Utility
     /// <summary>
     /// Represents a <c>Markdown</c> documentation file <see cref="Generate">generator</see>.
     /// </summary>
-    /// <remarks>Uses the <i>code-generation</i> attributes (<see cref="CodeGenClassAttribute"/>, <see cref="CodeGenCategoryAttribute"/>, <see cref="CodeGenPropertyAttribute"/> and <see cref="CodeGenPropertyCollectionAttribute"/>) and <see cref="System.ComponentModel.DefaultValueAttribute"/> as the documentation content source. Follows configuration objects and collections once per type, including cycles, without constructing or preparing configurations.</remarks>
+    /// <remarks>Uses the <i>code-generation</i> attributes (<see cref="CodeGenClassAttribute"/>, <see cref="CodeGenCategoryAttribute"/>, <see cref="CodeGenPropertyAttribute"/>, <see cref="CodeGenPropertyCollectionAttribute"/> and <see cref="CodeGenPropertyMapAttribute"/>) and <see cref="System.ComponentModel.DefaultValueAttribute"/> as the documentation content source. Follows configuration objects, collections and maps once per type, including cycles, without constructing or preparing configurations.</remarks>
     public static class MarkdownDocumentationGenerator
     {
         /// <summary>
@@ -83,10 +83,9 @@ namespace OnRamp.Utility
                 if (pd.Psa == null)
                 {
                     pd.Pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>();
-                    if (pd.Pcsa == null)
-                        throw new InvalidOperationException($"Type '{type.Name}' Property '{pi.Name}' does not have a required PropertySchemaAttribute or PropertyCollectionSchemaAttribute.");
-
-                    pd.Category = pd.Pcsa.Category;
+                    pd.Pmsa = pi.GetCustomAttribute<CodeGenPropertyMapAttribute>();
+                    pd.Category = pd.Pcsa?.Category ?? pd.Pmsa?.Category
+                        ?? throw new InvalidOperationException($"Type '{type.Name}' Property '{pi.Name}' does not have a required property shape attribute.");
                 }
                 else
                     pd.Category = pd.Psa.Category;
@@ -94,7 +93,7 @@ namespace OnRamp.Utility
                 propertyData?.Invoke(pd);
 
                 pdlist.Add(pd);
-                properties.Add(pd, ReferenceGeneration.GetProperty(pd.Property!, pd.Psa, pd.Pcsa));
+                properties.Add(pd, ReferenceGeneration.GetProperty(pd.Property!, pd.Psa, pd.Pcsa, pd.Pmsa));
             }
 
             var title = csa.Title;
@@ -185,7 +184,12 @@ namespace OnRamp.Utility
                     {
                         var childClass = ReferenceGeneration.GetClass(reference.ChildType);
                         var childFile = createFileName(reference.ChildType, childClass);
-                        childText = $"The corresponding [`{childClass.Name}`]({childFile}) {(p.Psa == null ? "collection" : "object")}.";
+                        childText = reference.Shape switch
+                        {
+                            ReferenceGeneration.Shape.Map => $"A string-keyed map of [`{childClass.Name}`]({childFile}) objects.",
+                            ReferenceGeneration.Shape.Sequence => $"The corresponding [`{childClass.Name}`]({childFile}) collection.",
+                            _ => $"The corresponding [`{childClass.Name}`]({childFile}) object."
+                        };
                     }
 
                     var declared = p.Psa?.JsonTypes ?? p.Pcsa?.ItemJsonTypes;
@@ -198,8 +202,16 @@ namespace OnRamp.Utility
 
                         WriteTableItem(tw, p.Name, propertyTitle, p.Psa.Description, null, p.Psa.IsMandatory, p.Psa.IsImportant, tableTitleTextSplitHtml, p.Psa.Options, scalarText, reference.DefaultJson);
                     }
-                    else
+                    else if (reference.Shape == ReferenceGeneration.Shape.Sequence)
                         WriteTableItem(tw, p.Name, childText ?? p.Pcsa!.Title, p.Pcsa!.Description, p.Pcsa.Markdown, p.Pcsa.IsMandatory, p.Pcsa.IsImportant, tableTitleTextSplitHtml, scalarTypes: scalarText, defaultJson: reference.DefaultJson);
+                    else
+                    {
+                        var propertyTitle = p.Pmsa!.Title;
+                        if (childText != null)
+                            propertyTitle = propertyTitle == null ? childText : $"{propertyTitle} {childText}";
+
+                        WriteTableItem(tw, p.Name, propertyTitle, p.Pmsa.Description, p.Pmsa.Markdown, p.Pmsa.IsMandatory, p.Pmsa.IsImportant, tableTitleTextSplitHtml, defaultJson: reference.DefaultJson);
+                    }
                 }
 
                 tw.WriteLine();
@@ -311,5 +323,10 @@ namespace OnRamp.Utility
         /// Gets or sets the <see cref="CodeGenPropertyCollectionAttribute"/>.
         /// </summary>
         public CodeGenPropertyCollectionAttribute? Pcsa { get; set; }
+
+        /// <summary>
+        /// Gets or sets the map property metadata.
+        /// </summary>
+        public CodeGenPropertyMapAttribute? Pmsa { get; set; }
     }
 }

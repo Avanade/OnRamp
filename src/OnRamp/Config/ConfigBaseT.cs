@@ -84,6 +84,12 @@ namespace OnRamp.Config
                     if (pcsa.IsMandatory && pi.GetValue(this) == null)
                         throw new CodeGenException(this, pi.Name, "Collection is mandatory.");
                 }
+
+                foreach (var pmsa in pi.GetCustomAttributes(typeof(CodeGenPropertyMapAttribute), true).OfType<CodeGenPropertyMapAttribute>())
+                {
+                    if (pmsa.IsMandatory && pi.GetValue(this) == null)
+                        throw new CodeGenException(this, pi.Name, "Map is mandatory.");
+                }
             }
         }
 
@@ -124,6 +130,56 @@ namespace OnRamp.Config
             }
 
             return coll;
+        }
+
+        /// <summary>
+        /// Prepares the values in a string-keyed map while retaining the original map instance and keys.
+        /// </summary>
+        /// <typeparam name="T">The value configuration type.</typeparam>
+        /// <param name="map">The map to prepare.</param>
+        /// <param name="propertyName">The owning map property name, used in qualified diagnostics.</param>
+        /// <returns>An empty map when <paramref name="map"/> is null; otherwise, the same prepared map.</returns>
+        /// <remarks>Each value receives the current root and owner as its context. The map key is available to derived configurations through <see cref="ConfigBase.MapEntryKey"/>. This also performs the <see cref="CodeGenPropertyAttribute.IsUnique"/> checks across values.</remarks>
+        protected async Task<Dictionary<string, T>> PrepareMapAsync<T>(Dictionary<string, T>? map, string propertyName) where T : ConfigBase
+        {
+            if (string.IsNullOrEmpty(propertyName))
+                throw new ArgumentException("A map property name must be specified.", nameof(propertyName));
+
+            if (map == null)
+                return [];
+
+            var unique = new Dictionary<PropertyInfo, HashSet<object?>>();
+            foreach (var pi in typeof(T).GetProperties())
+            {
+                foreach (var psa in pi.GetCustomAttributes(typeof(CodeGenPropertyAttribute), true).OfType<CodeGenPropertyAttribute>())
+                {
+                    if (psa.IsUnique)
+                        unique.Add(pi, []);
+                }
+            }
+
+            foreach (var (key, entity) in map)
+            {
+                if (entity == null)
+                {
+                    var escapedKey = key.Replace("\\", "\\\\").Replace("'", "\\'");
+                    throw new CodeGenException(this, $"{propertyName}['{escapedKey}']", "Map value is null.");
+                }
+
+                entity.SetMapEntry(propertyName, key);
+                foreach (var kvp in unique)
+                {
+                    var value = kvp.Key.GetValue(entity);
+                    if (kvp.Value.TryGetValue(value, out _))
+                        throw new CodeGenException(entity, kvp.Key.Name, $"Value '{value}' is not unique.");
+
+                    kvp.Value.Add(value);
+                }
+
+                await entity.PrepareAsync(Root!, this).ConfigureAwait(false);
+            }
+
+            return map;
         }
 
         /// <summary>
