@@ -22,6 +22,11 @@ namespace OnRamp.Utility
         internal sealed class Property
         {
             /// <summary>
+            /// Gets or sets the property shape.
+            /// </summary>
+            public Shape Shape { get; set; }
+
+            /// <summary>
             /// Gets or sets the referenced configuration type, or null for scalar values.
             /// </summary>
             public Type? ChildType { get; set; }
@@ -35,6 +40,16 @@ namespace OnRamp.Utility
             /// Gets or sets the serialized declared default, or null when no default is declared.
             /// </summary>
             public string? DefaultJson { get; set; }
+        }
+
+        /// <summary>
+        /// Describes the configuration property shape.
+        /// </summary>
+        internal enum Shape
+        {
+            Scalar,
+            Sequence,
+            Map
         }
 
         /// <summary>
@@ -61,7 +76,7 @@ namespace OnRamp.Utility
                 types.Add(type);
                 foreach (var pi in type.GetProperties().Where(p => p.GetCustomAttribute<JsonPropertyNameAttribute>() != null))
                 {
-                    var property = GetProperty(pi, pi.GetCustomAttribute<CodeGenPropertyAttribute>(), pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>());
+                    var property = GetProperty(pi, pi.GetCustomAttribute<CodeGenPropertyAttribute>(), pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>(), pi.GetCustomAttribute<CodeGenPropertyMapAttribute>());
                     if (property.ChildType != null)
                         Visit(property.ChildType);
                 }
@@ -77,31 +92,49 @@ namespace OnRamp.Utility
         /// <summary>
         /// Validates and interprets property metadata, including scalar declarations and serialized defaults.
         /// </summary>
-        internal static Property GetProperty(PropertyInfo pi, CodeGenPropertyAttribute? scalar, CodeGenPropertyCollectionAttribute? collection)
+        internal static Property GetProperty(PropertyInfo pi, CodeGenPropertyAttribute? scalar, CodeGenPropertyCollectionAttribute? collection, CodeGenPropertyMapAttribute? map = null)
         {
-            if (scalar == null && collection == null)
-                throw Error(pi, "does not have a required CodeGenPropertyAttribute or CodeGenPropertyCollectionAttribute.");
+            var shapeCount = (scalar == null ? 0 : 1) + (collection == null ? 0 : 1) + (map == null ? 0 : 1);
+            if (shapeCount == 0)
+                throw Error(pi, "does not have a required CodeGenPropertyAttribute, CodeGenPropertyCollectionAttribute, or CodeGenPropertyMapAttribute.");
+            if (shapeCount > 1)
+                throw Error(pi, "has conflicting property shape attributes; specify exactly one of CodeGenPropertyAttribute, CodeGenPropertyCollectionAttribute, or CodeGenPropertyMapAttribute.");
 
-            var isCollection = scalar == null;
-            var type = isCollection ? GetItemType(pi) : pi.PropertyType;
-            var declared = isCollection ? collection!.ItemJsonTypes : scalar!.JsonTypes;
-            var property = new Property();
-
-            if (typeof(ConfigBase).IsAssignableFrom(type))
+            var shape = map != null ? Shape.Map : collection != null ? Shape.Sequence : Shape.Scalar;
+            var type = shape switch
             {
-                if (declared != null)
-                    throw Error(pi, "cannot declare scalar JSON types for configuration objects or items.");
+                Shape.Map => GetMapValueType(pi),
+                Shape.Sequence => GetItemType(pi),
+                _ => pi.PropertyType
+            };
+            var property = new Property { Shape = shape };
+
+            if (shape == Shape.Map)
+            {
+                if (!typeof(ConfigBase).IsAssignableFrom(type))
+                    throw Error(pi, $"has unsupported map value type '{type.Name}'; map values must derive from ConfigBase.");
 
                 property.ChildType = type;
             }
-            else if (declared != null)
-                property.JsonTypes = GetDeclaredTypes(pi, type, declared);
-            else if (isCollection && type == typeof(string))
-                property.JsonTypes = ["string"];
-            else if (isCollection)
-                throw Error(pi, $"has unsupported collection item type '{type.Name}'; scalar items require explicit ItemJsonTypes.");
             else
-                property.JsonTypes = [GetInferredType(pi)];
+            {
+                var declared = shape == Shape.Sequence ? collection!.ItemJsonTypes : scalar!.JsonTypes;
+                if (typeof(ConfigBase).IsAssignableFrom(type))
+                {
+                    if (declared != null)
+                        throw Error(pi, "cannot declare scalar JSON types for configuration objects or items.");
+
+                    property.ChildType = type;
+                }
+                else if (declared != null)
+                    property.JsonTypes = GetDeclaredTypes(pi, type, declared);
+                else if (shape == Shape.Sequence && type == typeof(string))
+                    property.JsonTypes = ["string"];
+                else if (shape == Shape.Sequence)
+                    throw Error(pi, $"has unsupported collection item type '{type.Name}'; scalar items require explicit ItemJsonTypes.");
+                else
+                    property.JsonTypes = [GetInferredType(pi)];
+            }
 
             var defaultValue = pi.GetCustomAttribute<DefaultValueAttribute>();
             if (defaultValue != null)
@@ -117,6 +150,22 @@ namespace OnRamp.Utility
             }
 
             return property;
+        }
+
+        /// <summary>
+        /// Gets the value type from a supported Dictionary&lt;string, T&gt; property.
+        /// </summary>
+        private static Type GetMapValueType(PropertyInfo pi)
+        {
+            var type = pi.PropertyType;
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Dictionary<,>))
+                throw Error(pi, $"must be a Dictionary<string, TConfig>; type '{type.Name}' is not supported as a map.");
+
+            var arguments = type.GetGenericArguments();
+            if (arguments[0] != typeof(string))
+                throw Error(pi, $"has unsupported map key type '{arguments[0].Name}'; map keys must be strings.");
+
+            return arguments[1];
         }
 
         /// <summary>
@@ -175,6 +224,7 @@ namespace OnRamp.Utility
             Type t when t == typeof(string) => "string",
             Type t when t == typeof(bool?) => "boolean",
             Type t when t == typeof(int?) => "integer",
+            Type t when t == typeof(long) || t == typeof(long?) => "integer",
             Type t when t == typeof(decimal?) => "number",
             _ => throw Error(pi, $"has a Type '{pi.PropertyType.Name}' that is not supported without explicit JsonTypes metadata.")
         };

@@ -14,7 +14,7 @@ namespace OnRamp.Utility
     /// <summary>
     /// Represents a <c>JsonSchema</c> <see cref="Generate{T}(Stream, string?)">generator</see>.
     /// </summary>
-    /// <remarks>See <see href="https://json-schema.org/"/> and <see href="https://www.schemastore.org/json/"/>. Traverses configuration objects and collections once per type, including cycles. Child references use draft-04-compatible <c>allOf</c> wrappers. Explicit scalar declarations and <see cref="System.ComponentModel.DefaultValueAttribute"/> affect references only; no configuration instances are constructed or prepared.</remarks>
+    /// <remarks>See <see href="https://json-schema.org/"/> and <see href="https://www.schemastore.org/json/"/>. Traverses configuration objects, collections and maps once per type, including cycles. Child references use draft-04-compatible <c>allOf</c> wrappers. Explicit scalar declarations and <see cref="System.ComponentModel.DefaultValueAttribute"/> affect references only; no configuration instances are constructed or prepared.</remarks>
     public static class JsonSchemaGenerator
     {
         /// <summary>
@@ -25,8 +25,12 @@ namespace OnRamp.Utility
         /// <param name="title">The title override.</param>
         public static void Generate<T>(string path, string? title = null) where T : ConfigBase, IRootConfig
         {
-            using var fs = File.Create(path ?? throw new ArgumentNullException(nameof(path)));
-            Generate<T>(fs, title);
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
+
+            var types = ReferenceGeneration.FindTypes(typeof(T));
+            using var fs = File.Create(path);
+            Generate<T>(fs, title, types);
         }
 
         /// <summary>
@@ -37,9 +41,12 @@ namespace OnRamp.Utility
         /// <param name="title">The title override.</param>
         public static void Generate<T>(Stream stream, string? title = null) where T : ConfigBase, IRootConfig
         {
-            var type = typeof(T);
-            var types = ReferenceGeneration.FindTypes(type);
+            Generate<T>(stream, title, ReferenceGeneration.FindTypes(typeof(T)));
+        }
 
+        private static void Generate<T>(Stream stream, string? title, List<Type> types) where T : ConfigBase, IRootConfig
+        {
+            var type = typeof(T);
             using var jtw = new Utf8JsonWriter(stream ?? throw new ArgumentNullException(nameof(stream)), new JsonWriterOptions { Indented = true });
 
             jtw.WriteStartObject();
@@ -99,8 +106,9 @@ namespace OnRamp.Utility
 
                 var psa = pi.GetCustomAttribute<CodeGenPropertyAttribute>();
                 var pcsa = pi.GetCustomAttribute<CodeGenPropertyCollectionAttribute>();
-                var property = ReferenceGeneration.GetProperty(pi, psa, pcsa);
-                if (psa?.IsMandatory == true || pcsa?.IsMandatory == true)
+                var pmsa = pi.GetCustomAttribute<CodeGenPropertyMapAttribute>();
+                var property = ReferenceGeneration.GetProperty(pi, psa, pcsa, pmsa);
+                if (psa?.IsMandatory == true || pcsa?.IsMandatory == true || pmsa?.IsMandatory == true)
                     rqd.Add(name);
 
                 if (psa != null)
@@ -134,7 +142,7 @@ namespace OnRamp.Utility
                         jtw.WriteEndArray();
                     }
                 }
-                else
+                else if (property.Shape == ReferenceGeneration.Shape.Sequence)
                 {
                     jtw.WritePropertyName("type");
                     jtw.WriteStartArray();
@@ -165,6 +173,24 @@ namespace OnRamp.Utility
                     }
                     else
                         WriteReference(jtw, property.ChildType);
+                }
+                else
+                {
+                    jtw.WritePropertyName("type");
+                    jtw.WriteStartArray();
+                    jtw.WriteStringValue("object");
+                    jtw.WriteStringValue("null");
+                    jtw.WriteEndArray();
+                    jtw.WritePropertyName("title");
+                    jtw.WriteStringValue(CleanString(pmsa!.Title) ?? StringConverter.ToSentenceCase(name)!);
+                    if (pmsa.Description != null)
+                    {
+                        jtw.WritePropertyName("description");
+                        jtw.WriteStringValue(CleanString(pmsa.Description));
+                    }
+
+                    jtw.WritePropertyName("additionalProperties");
+                    WriteReference(jtw, property.ChildType!);
                 }
 
                 if (property.DefaultJson != null)

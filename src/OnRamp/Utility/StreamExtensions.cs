@@ -69,7 +69,7 @@ namespace OnRamp.Utility
 
         private static string DeserializeYamlToJson(TextReader yaml)
         {
-            var yml = new DeserializerBuilder().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
+            var yml = new DeserializerBuilder().WithDuplicateKeyChecking().WithNodeTypeResolver(new YamlNodeTypeResolver()).Build().Deserialize(yaml);
             return System.Text.Json.JsonSerializer.Serialize(ConvertYamlValue(yml));
         }
 
